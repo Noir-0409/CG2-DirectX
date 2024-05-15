@@ -6,10 +6,21 @@
 #include <dxgi1_6.h>
 #include <cassert>
 #include <dxgidebug.h>
+#include <dxcapi.h>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"dxcompiler.lib")
+
+struct Vector4 {
+
+	float x;
+	float y;
+	float z;
+	float w;
+
+};
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -45,6 +56,98 @@ void Log(const std::string& message) {
 
 }
 
+IDxcBlob* CompileShader(
+
+	const std::wstring& filePath,
+
+	const wchar_t* profile,
+
+	IDxcUtils* dxcUtils,
+
+	IDxcCompiler3* dxcCompiler,
+
+	IDxcIncludeHandler* includeHandler
+
+) {
+
+	Log(ConvertString(std::format(L"Begin CompileShader,path:{}",profile)));
+
+	IDxcBlobEncoding* shaderSource = nullptr;
+
+	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+
+	assert(SUCCEEDED(hr));
+
+	DxcBuffer shaderSourceBuffer;
+
+	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+
+	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
+	LPCWSTR arguments[] = {
+
+		filePath.c_str(),
+
+		L"-E",L"main",
+
+		L"-T",profile,
+
+		L"-Zi",L"-Qembed_debug",
+
+		L"-Od",
+
+		L"-Zpr"
+
+	};
+
+	IDxcResult* shaderResult = nullptr;
+
+	hr = dxcCompiler->Compile(
+
+		&shaderSourceBuffer,
+
+		arguments,
+
+		_countof(arguments),
+
+		includeHandler,
+
+		IID_PPV_ARGS(&shaderResult)
+
+	);
+
+	assert(SUCCEEDED(hr));
+
+	IDxcBlobUtf8* shaderError = nullptr;
+
+	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+
+	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
+
+		Log(shaderError->GetStringPointer());
+
+		assert(false);
+
+	}
+
+	IDxcBlob* shaderBlob = nullptr;
+
+	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+
+	assert(SUCCEEDED(hr));
+
+	Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
+
+	shaderSource->Release();
+
+	shaderResult->Release();
+
+	return shaderBlob;
+
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	switch (msg) {
@@ -60,6 +163,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 
 }
+
+
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -342,6 +447,206 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg{};
 
+	IDxcUtils* dxcUtils = nullptr;
+
+	IDxcCompiler3* dxcCompiler = nullptr;
+
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+
+	assert(SUCCEEDED(hr));
+
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+
+	assert(SUCCEEDED(hr));
+
+	IDxcIncludeHandler* includeHandler = nullptr;
+
+	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
+
+	assert(SUCCEEDED(hr));
+
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+
+	descriptionRootSignature.Flags =
+
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	ID3DBlob* signatureBlob = nullptr;
+
+	ID3DBlob* errorBlob = nullptr;
+
+	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+
+		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+
+	if (FAILED(hr)) {
+
+		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+
+		assert(false);
+
+	}
+
+	ID3D12RootSignature* rootSignature = nullptr;
+
+	hr = device->CreateRootSignature(0,
+
+		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+
+		IID_PPV_ARGS(&rootSignature));
+
+	assert(SUCCEEDED(hr));
+
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+
+	inputElementDescs[0].SemanticName = "POSITION";
+
+	inputElementDescs[0].SemanticIndex = 0;
+
+	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+	D3D12_INPUT_LAYOUT_DESC inputLayOutDesc{};
+
+	inputLayOutDesc.pInputElementDescs = inputElementDescs;
+
+	inputLayOutDesc.NumElements = _countof(inputElementDescs);
+
+	D3D12_BLEND_DESC blendDesc{};
+
+	blendDesc.RenderTarget[0].RenderTargetWriteMask =
+
+		D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+	IDxcBlob* vertexShaderBlob = CompileShader(L"Object3D.VS.hlsl",
+
+		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+
+	assert(vertexShaderBlob != nullptr);
+
+	IDxcBlob* pixelShaderBlob = CompileShader(L"Object3D.PS.hlsl",
+
+		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+
+	assert(pixelShaderBlob != nullptr);
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipeLineStateDesc{};
+
+	graphicsPipeLineStateDesc.pRootSignature = rootSignature;
+
+	graphicsPipeLineStateDesc.InputLayout = inputLayOutDesc;
+
+	graphicsPipeLineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
+
+	vertexShaderBlob->GetBufferSize() };
+
+	graphicsPipeLineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
+
+	pixelShaderBlob->GetBufferSize() };
+
+	graphicsPipeLineStateDesc.BlendState = blendDesc;
+
+	graphicsPipeLineStateDesc.RasterizerState = rasterizerDesc;
+
+	graphicsPipeLineStateDesc.NumRenderTargets = 1;
+
+	graphicsPipeLineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
+	graphicsPipeLineStateDesc.PrimitiveTopologyType =
+
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+	graphicsPipeLineStateDesc.SampleDesc.Count = 1;
+
+	graphicsPipeLineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+	ID3D12PipelineState* graphicsPipelineState = nullptr;
+
+	hr = device->CreateGraphicsPipelineState(&graphicsPipeLineStateDesc,
+
+		IID_PPV_ARGS(&graphicsPipelineState));
+
+	assert(SUCCEEDED(hr));
+
+	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
+
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+	D3D12_RESOURCE_DESC vertexResourceDesc{};
+
+	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+
+	vertexResourceDesc.Width = sizeof(Vector4) * 3;
+
+	vertexResourceDesc.Height = 1;
+
+	vertexResourceDesc.DepthOrArraySize = 1;
+
+	vertexResourceDesc.MipLevels = 1;
+
+	vertexResourceDesc.SampleDesc.Count = 1;
+
+	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	ID3D12Resource* vertexResource = nullptr;
+
+	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
+
+		&vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+
+		IID_PPV_ARGS(&vertexResource));
+
+	assert(SUCCEEDED(hr));
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+
+	vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
+
+	vertexBufferView.StrideInBytes = sizeof(Vector4);
+
+	Vector4* vertexData = nullptr;
+
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	vertexData[0] = { -0.5f,-0.5f,0.0f,1.0f };
+
+	vertexData[1] = { 0.0f,0.5f,0.0f,1.0f };
+
+	vertexData[2] = { 0.5f,-0.5f,0.0f,1.0f };
+
+	D3D12_VIEWPORT viewport{};
+
+	viewport.Width = kClientWidth;
+
+	viewport.Height = kClientHeight;
+
+	viewport.TopLeftX = 0;
+
+	viewport.TopLeftY = 0;
+
+	viewport.MinDepth = 0.0f;
+
+	viewport.MaxDepth = 1.0f;
+
+	D3D12_RECT scissorRect{};
+
+	scissorRect.left = 0;
+
+	scissorRect.right = kClientWidth;
+
+	scissorRect.top = 0;
+
+	scissorRect.bottom = kClientHeight;
+
 	while (msg.message != WM_QUIT) {
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -372,6 +677,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
 
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
+			commandList->RSSetViewports(1, &viewport);
+
+			commandList->RSSetScissorRects(1, &scissorRect);
+
+			commandList->SetGraphicsRootSignature(rootSignature);
+
+			commandList->SetPipelineState(graphicsPipelineState);
+			
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+
+			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			commandList->DrawInstanced(3, 1, 0, 0);
 
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
@@ -435,6 +754,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	useAdapter->Release();
 
 	dxgiFactory->Release();
+
+	vertexResource->Release();
+
+	graphicsPipelineState->Release();
+
+	signatureBlob->Release();
+
+	if (errorBlob) {
+
+		errorBlob->Release();
+
+	}
+
+	rootSignature->Release();
+
+	pixelShaderBlob->Release();
+
+	vertexShaderBlob->Release();
 
 #ifdef _DEBUG
 
