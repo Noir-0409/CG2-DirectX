@@ -1098,11 +1098,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 			
-			/*ImGui::Begin("Window");
+			ImGui::Begin("Window");
 
 			ImGui::DragFloat3("color", &materialData->x, 0.01f);
 
-			ImGui::End();*/
+			ImGui::End();
 
 			ImGui::ShowDemoWindow();
 
@@ -1202,6 +1202,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 }
 
+
+
 ImGui_ImplDX12_Shutdown();
 
 ImGui_ImplWin32_Shutdown();
@@ -1213,6 +1215,8 @@ ImGui::DestroyContext();
 	fence->Release();
 
 	rtvDescriptorHeap->Release();
+
+	srvDescriptorHeap->Release();
 
 	swapChainResources[0]->Release();
 
