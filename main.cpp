@@ -1214,6 +1214,8 @@ ImGui::DestroyContext();
 
 	rtvDescriptorHeap->Release();
 
+	srvDescriptorHeap->Release();
+
 	swapChainResources[0]->Release();
 
 	swapChainResources[1]->Release();
