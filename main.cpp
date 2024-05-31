@@ -1101,10 +1101,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Begin("Window");
 
 			ImGui::DragFloat3("color", &materialData->x, 0.01f);
+			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
+			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
+			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 
 			ImGui::End();
 
-			ImGui::ShowDemoWindow();
+			//ImGui::ShowDemoWindow();
 
 			*wvpData = worldViewProjectionMatrix;
 
@@ -1194,7 +1197,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			assert(SUCCEEDED(hr));
 
-			transform.rotate.y += 0.1f;
+			//transform.rotate.y += 0.1f;
 
 			*wvpData = worldMatrix;
 
