@@ -10,6 +10,7 @@
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include "externals/DirectXTex/DirectXTex.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -578,6 +579,104 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 
 }
 
+DirectX::ScratchImage LoadTexture(const std::string& filePath) {
+
+	DirectX::ScratchImage image{};
+
+	std::wstring filePathW = ConvertString(filePath);
+
+	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+
+	assert(SUCCEEDED(hr));
+
+	DirectX::ScratchImage mipImages{};
+
+	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+
+	assert(SUCCEEDED(hr));
+
+	return mipImages;
+
+}
+
+ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
+
+	D3D12_RESOURCE_DESC resourceDesc{};
+
+	resourceDesc.Width = UINT(metadata.width);
+
+	resourceDesc.Height = UINT(metadata.height);
+
+	resourceDesc.MipLevels = UINT16(metadata.mipLevels);
+
+	resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);
+
+	resourceDesc.Format = metadata.format;
+
+	resourceDesc.SampleDesc.Count = 1;
+
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);
+
+	D3D12_HEAP_PROPERTIES heapProperties{};
+
+	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
+
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+
+	ID3D12Resource* resource = nullptr;
+
+	HRESULT hr = device->CreateCommittedResource(
+
+		&heapProperties,
+
+		D3D12_HEAP_FLAG_NONE,
+
+		&resourceDesc,
+
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+
+		nullptr,
+
+		IID_PPV_ARGS(&resource));
+
+	assert(SUCCEEDED(hr));
+
+	return resource;
+
+}
+
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages) {
+
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+
+	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+
+		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+
+		HRESULT hr = texture->WriteToSubresource(
+
+			UINT(mipLevel),
+
+			nullptr,
+
+			img->pixels,
+
+			UINT(img->rowPitch),
+
+			UINT(img->slicePitch)
+
+		);
+
+		assert(SUCCEEDED(hr));
+
+	}
+
+}
+
+
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1099,14 +1198,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-			
-			/*ImGui::Begin("Window");
+			ImGui::Begin("Window");
 
 			ImGui::DragFloat3("color", &materialData->x, 0.01f);
+			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
+			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
+			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 
-			ImGui::End();*/
-
-			ImGui::ShowDemoWindow();
+			ImGui::End();
+			
+			//ImGui::ShowDemoWindow();
 
 			*wvpData = worldViewProjectionMatrix;
 
@@ -1196,7 +1297,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			assert(SUCCEEDED(hr));
 
-			transform.rotate.y += 0.1f;
+			//transform.rotate.y += 0.1f;
 
 			*wvpData = worldMatrix;
 
