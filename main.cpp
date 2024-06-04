@@ -580,6 +580,8 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
+	CoInitializeEx(0, COINIT_MULTITHREADED);
+
 #pragma region Windowの生成
 
 	WNDCLASS wc{};
@@ -1279,6 +1281,8 @@ ImGui::DestroyContext();
 	}
 
 	Log("Hello,DirectX!\n");
+
+	CoUninitialize();
 
 	return 0;
 
