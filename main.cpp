@@ -675,8 +675,6 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 
 }
 
-
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1092,6 +1090,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	assert(SUCCEEDED(hr));
 
+	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+
+	const DirectX::TexMetadata& metaData = mipImages.GetMetadata();
+
+	ID3D12Resource* textureResource = CreateTextureResource(device, metaData);
+
+	UploadTextureData(textureResource, mipImages);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+
+	srvDesc.Format = metaData.format;
+
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+
+	srvDesc.Texture2D.MipLevels = UINT(metaData.mipLevels);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
+
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -1336,6 +1362,8 @@ ImGui::DestroyContext();
 	useAdapter->Release();
 
 	dxgiFactory->Release();
+
+	textureResource->Release();
 
 	vertexResource->Release();
 
