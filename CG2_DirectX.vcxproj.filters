@@ -78,4 +78,7 @@
       <Filter>imgui</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj" />
+  </ItemGroup>
 </Project>
