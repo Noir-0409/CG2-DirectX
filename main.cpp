@@ -129,7 +129,7 @@ IDxcBlob* CompileShader(
 
 ) {
 
-	Log(ConvertString(std::format(L"Begin CompileShader,path:{}",profile)));
+	Log(ConvertString(std::format(L"Begin CompileShader,path:{}", profile)));
 
 	IDxcBlobEncoding* shaderSource = nullptr;
 
@@ -731,7 +731,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 
 	ID3D12Debug1* debugController = nullptr;
 
@@ -743,7 +743,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-	#endif
+#endif
 
 #pragma region Factoryの生成
 
@@ -760,7 +760,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	IDXGIAdapter4* useAdapter = nullptr;
 
 	for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference
-	(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) !=DXGI_ERROR_NOT_FOUND; ++i) {
+	(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) != DXGI_ERROR_NOT_FOUND; ++i) {
 
 		DXGI_ADAPTER_DESC3 adapterDesc{};
 
@@ -770,7 +770,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 
-			Log(ConvertString( std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
+			Log(ConvertString(std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
 
 			break;
 
@@ -821,7 +821,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12InfoQueue* infoQueue = nullptr;
 
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
-			
+
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
 
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
@@ -908,7 +908,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd ,&swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
 
 	assert(SUCCEEDED(hr));
 
@@ -1196,7 +1196,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
-		
+
 	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
 	vertexData[1].texcoord = { 0.5f,0.0f };
 
@@ -1297,7 +1297,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 
 			ImGui::End();
-			
+
 			//ImGui::ShowDemoWindow();
 
 			*wvpData = worldViewProjectionMatrix;
@@ -1339,7 +1339,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature);
 
 			commandList->SetPipelineState(graphicsPipelineState);
-			
+
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1395,14 +1395,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			*wvpData = worldMatrix;
 
 		}
-	
-}
 
-ImGui_ImplDX12_Shutdown();
+	}
 
-ImGui_ImplWin32_Shutdown();
+	ImGui_ImplDX12_Shutdown();
 
-ImGui::DestroyContext();
+	ImGui_ImplWin32_Shutdown();
+
+	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
 
