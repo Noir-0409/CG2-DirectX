@@ -908,6 +908,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
+	// Textureを読んで転送する
+	DirectX::ScratchImage mipImages = LoadTexture("resources/UVChecker.png");
+
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+
+	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
+
+	UploadTextureData(textureResource, mipImages);
+
 	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 
 	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
@@ -1097,15 +1106,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		IID_PPV_ARGS(&graphicsPipelineState));
 
 	assert(SUCCEEDED(hr));
-
-	// Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/UVChecker.png");
-
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-
-	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
-
-	UploadTextureData(textureResource, mipImages);
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);
 
@@ -1376,6 +1376,8 @@ ImGui::DestroyContext();
 	materialResource->Release();
 
 	wvpResource->Release();
+
+	textureResource->Release();
 
 #ifdef _DEBUG
 
