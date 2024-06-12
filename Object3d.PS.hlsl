@@ -1,3 +1,5 @@
+#include "Object3d.hlsli"
+
 struct PixelShaderOutput {
 
 	float4 color : SV_TARGET0;
@@ -12,14 +14,7 @@ struct Material {
 
 ConstantBuffer<Material> gMaterial:register(b0);
 
-struct PixelshaderOutput {
-
-	float4 color : SV_TARGET0;
-
-};
-
-
-PixelShaderOutput main() {
+PixelShaderOutput main(VertexShaderOutput input) {
 
 	PixelShaderOutput output;
 
