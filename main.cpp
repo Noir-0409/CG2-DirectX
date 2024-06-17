@@ -708,6 +708,8 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 
 	resourceDesc.MipLevels = 1; // 奥行or配列Textureの数
 
+	resourceDesc.DepthOrArraySize = 1; // 奥行or配列Textureの配列数
+
 	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // DepthStencilとして利用可能なフォーマット
 
 	resourceDesc.SampleDesc.Count = 1; // サンプリングカウント
@@ -1342,6 +1344,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+	ID3D12Resource* depthStenticilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
 
 	MSG msg{};
 
