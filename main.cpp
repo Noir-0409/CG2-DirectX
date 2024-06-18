@@ -697,6 +697,7 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 
 }
 
+
 ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height) {
 
 	// 生成するResourceの設定
@@ -1345,7 +1346,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+	// DepthStencialTextureをウィンドウのサイズで作成
 	ID3D12Resource* depthStenticilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
+
+	// DSV用のヒープでディスクリプタの数は1
+	ID3D12DescriptorHeap* dsvDescritorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+
+	// DSVの設定
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Format。基本的にはResourceに合わせる
+
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D; // 2dTexture
+
+	// DSVHeapの先頭にDSVを作る
+	device->CreateDepthStencilView(depthStenticilResource, &dsvDesc, dsvDescritorHeap->GetCPUDescriptorHandleForHeapStart());
+
+	// DepthStencialStateの設定
+	D3D12_DEPTH_STENCIL_DESC depthStencialDesc{};
+
+	// Depthの機能を有効化
+	depthStencialDesc.DepthEnable = true;
+
+	// 書き込み
+	depthStencialDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
+	// 比較関数はLessEqual
+	depthStencialDesc.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+
+	// DepthStencilの設定
+	graphicsPipeLineStateDesc.DepthStencilState = depthStencialDesc;
+
+	graphicsPipeLineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	MSG msg{};
 
@@ -1357,6 +1389,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			DispatchMessage(&msg);
 
 		} else {
+
+			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+			D3D12_RESOURCE_BARRIER barrier{};
+
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+			barrier.Transition.pResource = swapChainResources[backBufferIndex];
+
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+			// 描画先のRTVとDSVを設定
+			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescritorHeap->GetCPUDescriptorHandleForHeapStart();
+
+			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+
+			// 指定した深度で画面全体をクリア
+			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 			ImGui_ImplDX12_NewFrame();
 
@@ -1375,7 +1429,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-
 			ImGui::Begin("Window");
 
 			ImGui::DragFloat3("color", &materialData->x, 0.01f);
@@ -1393,19 +1446,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Render();
 
-			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-			D3D12_RESOURCE_BARRIER barrier{};
-
-			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
-			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
-			barrier.Transition.pResource = swapChainResources[backBufferIndex];
-
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
 			commandList->ResourceBarrier(1, &barrier);
 
@@ -1485,8 +1525,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 	}
-
-
 
 	ImGui_ImplDX12_Shutdown();
 
