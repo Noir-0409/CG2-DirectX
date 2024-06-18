@@ -1390,28 +1390,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 
-			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
-			D3D12_RESOURCE_BARRIER barrier{};
-
-			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
-			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
-			barrier.Transition.pResource = swapChainResources[backBufferIndex];
-
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-			// 描画先のRTVとDSVを設定
-			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescritorHeap->GetCPUDescriptorHandleForHeapStart();
-
-			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-
-			// 指定した深度で画面全体をクリア
-			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
 			ImGui_ImplDX12_NewFrame();
 
 			ImGui_ImplWin32_NewFrame();
@@ -1446,6 +1424,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Render();
 
+			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+			D3D12_RESOURCE_BARRIER barrier{};
+
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+			barrier.Transition.pResource = swapChainResources[backBufferIndex];
+
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+			// 描画先のRTVとDSVを設定
+			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescritorHeap->GetCPUDescriptorHandleForHeapStart();
+
+			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+
+			// 指定した深度で画面全体をクリア
+			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 			commandList->ResourceBarrier(1, &barrier);
 
