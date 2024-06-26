@@ -1448,6 +1448,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// 描画先のRTVとSRVを設定
 			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
 			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
 			// 指定した深度で画面全体をクリア
