@@ -593,6 +593,39 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 
 }
 
+//平行投影行列
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+
+	float tx = -(right + left) / (right - left);
+	float ty = -(top + bottom) / (top - bottom);
+	//float tz = -(farClip + nearClip) / (farClip - nearClip);
+
+	Matrix4x4 orthoMatrix;
+
+	orthoMatrix.m[0][0] = 2.0f / (right - left);
+	orthoMatrix.m[0][1] = 0;
+	orthoMatrix.m[0][2] = 0;
+	orthoMatrix.m[0][3] = 0;
+
+	orthoMatrix.m[1][0] = 0;
+	orthoMatrix.m[1][1] = 2.0f / (top - bottom);
+	orthoMatrix.m[1][2] = 0;
+	orthoMatrix.m[1][3] = 0;
+
+	orthoMatrix.m[2][0] = 0;
+	orthoMatrix.m[2][1] = 0;
+	orthoMatrix.m[2][2] = 1.0f / (farClip - nearClip);
+	orthoMatrix.m[2][3] = 0;
+
+	orthoMatrix.m[3][0] = tx;
+	orthoMatrix.m[3][1] = ty;
+	orthoMatrix.m[3][2] = -2.0f / (farClip - nearClip);
+	orthoMatrix.m[3][3] = 1;
+
+	return orthoMatrix;
+
+}
+
 DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 
 	// テクスチャファイルを読んでプログラムで扱えるようにする
@@ -1303,6 +1336,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 右下2
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
+
+	//// Sprite用の頂点Resourceを作る
+	//ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+
+	//// 頂点BufferViewを作成
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+
+	//// リソースの先頭アドレスから使う
+	//vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+
+	//// 使用するリソースのサイズは頂点6つ分のサイズ
+	//vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+
+	//// 1頂点あたりのサイズ
+	//vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+	//VertexData* vertexDataSprite = nullptr;
+
+	//vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+
+	// 1枚目の三角形
+
 
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4) * 3);
 
