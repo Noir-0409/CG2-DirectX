@@ -73,6 +73,14 @@ Transform transform{
 
 };
 
+Transform transformSprite{
+
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+
+};
+
 Transform cameraTransform{
 
 	{1.0f,1.0f,1.0f},
@@ -1404,8 +1412,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 単価行列を書き込んでおく
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-
 	D3D12_VIEWPORT viewport{};
 
 	viewport.Width = kClientWidth;
@@ -1508,6 +1514,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
 			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+
+			ImGui::DragFloat3("translate", &transformSprite.translate.x, 0.01f);
+			ImGui::DragFloat3("scale", &transformSprite.scale.x, 0.01f);
+			ImGui::DragFloat3("rotate", &transformSprite.rotate.x, 0.01f);
+
 
 			ImGui::End();
 
