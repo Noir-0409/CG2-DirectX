@@ -89,6 +89,8 @@ Transform cameraTransform{
 
 };
 
+
+
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
 		return std::wstring();
@@ -1345,6 +1347,87 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
+	uint32_t latIndex = 0; // 緯度
+
+	uint32_t lonIndex = 0; // 経度
+
+	uint32_t kSubdivision = 16; // 分割数
+
+	uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
+
+	float u = float(lonIndex) / float(kSubdivision);
+
+	float v = 1.0f - float(latIndex) / float(kSubdivision);
+
+	float pi = 3.14f;
+
+	// 経度分割1つ分の角度 Φd
+	const float kLonEvery = pi * 2.0f / float(kSubdivision);
+
+	// 緯度分割1つ分の角度 Θd
+	const float kLatEvery = pi / float(kSubdivision);
+
+	// 緯度の方向に分割
+	for (latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+
+		float lat = -pi / 2.0f + kLatEvery * latIndex;// Θ
+
+		// 経度の方向に分割しながら線を描く
+		// 1枚目の三角形
+		for (lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+
+			float lon = lonIndex * kLonEvery;// Φ
+
+			// 頂点データを入力。基準点a
+			vertexData[start].position.x = cos(lat) * cos(lon);
+			vertexData[start].position.y = sin(lat);
+			vertexData[start].position.z = cos(lat) * sin(lon);
+			vertexData[start].position.w = 1.0f;
+			vertexData[start].texcoord = { u,v };
+
+			// 残りの5頂点も順番に計算
+			// 点b
+			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexData[start + 1].position.y = sin(lat + kLatEvery);
+			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 1].position.w = 1.0f;
+			vertexData[start + 1].texcoord = { u, v - 1.0f / float(kSubdivision) };
+
+			// 点c
+			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[start + 2].position.y = sin(lat);
+			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLatEvery);
+			vertexData[start + 2].position.w = 1.0f;
+			vertexData[start + 2].texcoord = { u + 1.0f / float(kSubdivision), v };
+
+			// 二枚目の三角形
+			// 点c
+			vertexData[start + 3].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[start + 3].position.y = sin(lat);
+			vertexData[start + 3].position.z = cos(lat) * sin(lon + kLatEvery);
+			vertexData[start + 3].position.w = 1.0f;
+			vertexData[start + 3].texcoord = { u + 1.0f / float(kSubdivision), v };
+
+			// 点b
+			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexData[start + 4].position.y = sin(lat + kLatEvery);
+			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 4].position.w = 1.0f;
+			vertexData[start + 4].texcoord = { u, v - 1.0f / float(kSubdivision) };
+
+			// 点d
+			vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+			vertexData[start + 5].position.y = sin(lat + kLatEvery);
+			vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			vertexData[start + 5].position.w = 1.0f;
+			vertexData[start + 5].texcoord = { u + 1.0f / float(kSubdivision), v - 1.0f / float(kSubdivision) };
+
+		}
+
+	}
+
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4) * 3);
 
 	Vector4* materialData = nullptr;
@@ -1578,7 +1661,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, -10);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
