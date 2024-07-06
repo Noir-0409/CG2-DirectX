@@ -1517,6 +1517,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::End();
 
+
 			//ImGui::ShowDemoWindow();
 
 			*wvpData = worldViewProjectionMatrix;
