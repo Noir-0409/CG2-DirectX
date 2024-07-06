@@ -1412,6 +1412,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 単価行列を書き込んでおく
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+
+	// リソースの先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+
+	// 使用するリソースのサイズは頂点6つ分
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+
+	// インデックスはuint32_t
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
+	// インデックスリソースにデータを書き込む
+	uint32_t* indexDataSprite = nullptr;
+
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+
+	indexDataSprite[0] = 0;
+
+	indexDataSprite[1] = 1;
+
+	indexDataSprite[2] = 2;
+
+	indexDataSprite[3] = 1;
+
+	indexDataSprite[4] = 3;
+
+	indexDataSprite[5] = 2;
+
 	D3D12_VIEWPORT viewport{};
 
 	viewport.Width = kClientWidth;
@@ -1517,7 +1547,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::End();
 
-
 			//ImGui::ShowDemoWindow();
 
 			*wvpData = worldViewProjectionMatrix;
@@ -1593,6 +1622,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 			commandList->DrawInstanced(6, 1, 0, 0);
+
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);
+
+			// インデックス描画
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1705,6 +1739,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResourceSprite->Release();
 
 	vertexResourceSprite->Release();
+
+	indexResourceSprite->Release();
 
 #ifdef _DEBUG
 
