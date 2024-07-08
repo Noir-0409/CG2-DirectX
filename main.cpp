@@ -85,7 +85,7 @@ Transform cameraTransform{
 
 	{1.0f,1.0f,1.0f},
 	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,-5.0f}
+	{0.0f,0.0f,-10.0f}
 
 };
 
@@ -1309,13 +1309,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	assert(SUCCEEDED(hr));
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 1536);
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 1536;
 
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -1661,7 +1661,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			commandList->DrawInstanced(6, 1, 0, -10);
+			commandList->DrawInstanced(1536, 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
