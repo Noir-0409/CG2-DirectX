@@ -1355,10 +1355,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
 
-	float u = float(lonIndex) / float(kSubdivision);
-
-	float v = 1.0f - float(latIndex) / float(kSubdivision);
-
 	float pi = 3.14f;
 
 	// 経度分割1つ分の角度 Φd
@@ -1380,14 +1376,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			float lon = lonIndex * kLonEvery;// Φ
 
-			// 頂点データを入力。基準点a
+			float u = float(lonIndex) / float(kSubdivision);
+
+			float v = 1.0f - float(latIndex) / float(kSubdivision);
+
+			 // 頂点データを入力。基準点a
 			vertexData[start].position.x = cos(lat) * cos(lon);
 			vertexData[start].position.y = sin(lat);
 			vertexData[start].position.z = cos(lat) * sin(lon);
 			vertexData[start].position.w = 1.0f;
-			vertexData[start].texcoord = { u,v };
+			vertexData[start].texcoord = { u, v };
 
-			// 残りの5頂点も順番に計算
 			// 点b
 			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
 			vertexData[start + 1].position.y = sin(lat + kLatEvery);
@@ -1398,7 +1397,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 点c
 			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
 			vertexData[start + 2].position.y = sin(lat);
-			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLatEvery);
+			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[start + 2].position.w = 1.0f;
 			vertexData[start + 2].texcoord = { u + 1.0f / float(kSubdivision), v };
 
@@ -1406,7 +1405,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 点c
 			vertexData[start + 3].position.x = cos(lat) * cos(lon + kLonEvery);
 			vertexData[start + 3].position.y = sin(lat);
-			vertexData[start + 3].position.z = cos(lat) * sin(lon + kLatEvery);
+			vertexData[start + 3].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[start + 3].position.w = 1.0f;
 			vertexData[start + 3].texcoord = { u + 1.0f / float(kSubdivision), v };
 
