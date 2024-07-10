@@ -1251,13 +1251,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Material* materialDataSprite = nullptr;
 
-	/*materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-
-	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);*/
-
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 
 	materialDataSprite->enableLighting = false;
+
+	materialDataSprite->color = { 1.0f,1.0f,1.0f,1.0f };
 
 	ID3DBlob* signatureBlob = nullptr;
 
