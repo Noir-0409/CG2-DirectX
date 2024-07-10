@@ -65,6 +65,13 @@ struct VertexData {
 
 };
 
+struct Material {
+
+	Vector4 color;
+	int32_t enableLighting;
+
+};
+
 //Transform変数の作成
 Transform transform{
 
@@ -89,8 +96,6 @@ Transform cameraTransform{
 	{0.0f,0.0f,-10.0f}
 
 };
-
-
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -1107,10 +1112,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource2, &srvDesc2, textureSrvHandleCPU2);
 	
 	// SRVを作成するDescriptorHeapの場所を決める
-	/*D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();*/
-
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 0);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 0);
@@ -1244,6 +1245,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptionRootSignature.pParameters = rootParameters;
 
 	descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+	// Sprite用のMaterialResourceを作る
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+
+	Material* materialDataSprite = nullptr;
+
+	/*materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+
+	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);*/
+
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+
+	materialDataSprite->enableLighting = false;
 
 	ID3DBlob* signatureBlob = nullptr;
 
@@ -1590,7 +1604,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 単価行列を書き込んでおく
 	*transformationMatrixDataSprite = MakeIdentity4x4();
-
+	
 	D3D12_VIEWPORT viewport{};
 
 	viewport.Width = kClientWidth;
@@ -1651,7 +1665,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool useMonsterBall = true;
 
-
+	// Lightingを有効にする
 
 	MSG msg{};
 
@@ -1774,6 +1788,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
@@ -1895,7 +1911,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	vertexResourceSprite->Release();
 
-
+	materialResourceSprite->Release();
 
 #ifdef _DEBUG
 
