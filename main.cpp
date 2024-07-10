@@ -1048,6 +1048,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
+	// 2枚目のTextureを読んで転送する
+	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
+
+	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
+
+	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
+
+	UploadTextureData(textureResource2, mipImages2);
+
 	// Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/UVChecker.png");
 
@@ -1806,6 +1815,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	textureResource->Release();
 
+	textureResource2->Release();
+
 	depthStencilResource->Release();
 
 	dsvDescriptorHeap->Release();
@@ -1813,6 +1824,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResourceSprite->Release();
 
 	vertexResourceSprite->Release();
+
+
 
 #ifdef _DEBUG
 
