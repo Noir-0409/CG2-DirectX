@@ -72,6 +72,21 @@ struct Material {
 
 };
 
+struct TransformationMatrix
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+
+};
+
+struct DirectionalLight {
+
+	Vector4 color; // ライトの色
+	Vector3 direction; // ライトの向き
+	float intensity; // 輝度
+
+};
+
 //Transform変数の作成
 Transform transform{
 
@@ -1198,7 +1213,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを指導計算
 
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 
@@ -1219,6 +1234,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
 
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
+
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; //CBVを使う
+
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderを使う
+
+	rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 
@@ -1256,6 +1277,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSprite->enableLighting = false;
 
 	materialDataSprite->color = { 1.0f,1.0f,1.0f,1.0f };
+
+	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(Material));
+
+	DirectionalLight* directionalLightData = nullptr;
+
+	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
+
+	// デフォルト値
+	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+
+	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+
+	directionalLightData->intensity = 1.0f;
 
 	ID3DBlob* signatureBlob = nullptr;
 
@@ -1910,6 +1944,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResourceSprite->Release();
 
 	materialResourceSprite->Release();
+
+	directionalLightResource->Release();
 
 #ifdef _DEBUG
 
