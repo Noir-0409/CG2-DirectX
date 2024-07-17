@@ -1570,6 +1570,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 
+	materialData->enableLighting = true;
+
 	materialData->color= Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
