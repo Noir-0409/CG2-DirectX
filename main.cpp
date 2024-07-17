@@ -1278,7 +1278,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialDataSprite->color = { 1.0f,1.0f,1.0f,1.0f };
 
-	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(Material));
+	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
 
 	DirectionalLight* directionalLightData = nullptr;
 
@@ -1564,21 +1564,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4) * 3);
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 
-	Vector4* materialData = nullptr;
+	Material* materialData = nullptr;
 
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 
-	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData->color= Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 
-	Matrix4x4* wvpData = nullptr;
+	TransformationMatrix* wvpData = nullptr;
 
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 
-	*wvpData = MakeIdentity4x4();
+	wvpData->World= MakeIdentity4x4();
+
+	wvpData->WVP = MakeIdentity4x4();
 
 	// Sprite用の頂点リソース
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -1741,17 +1743,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("Window");
 
-			ImGui::DragFloat3("color", &materialData->x, 0.01f);
+			ImGui::DragFloat3("color", &materialData->color.x, 0.01f);
 			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
 			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			ImGui::DragFloat3("directionalLightData", &directionalLightData->color.x);
+			ImGui::DragFloat3("Light.color", &directionalLightData->color.x, 0.01f);
+			ImGui::DragFloat3("Light.direction", &directionalLightData->direction.x, 0.01f);
+			ImGui::DragFloat3("Light.intensity", &directionalLightData->intensity, 0.01f);
 			ImGui::End();
 
 			//ImGui::ShowDemoWindow();
 
-			*wvpData = worldViewProjectionMatrix;
+			wvpData->World = worldViewProjectionMatrix;
+
+			wvpData->WVP = worldViewProjectionMatrix;
 
 			scissorRect.bottom = kClientHeight;
 
@@ -1871,7 +1877,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			transform.rotate.y += 0.02f;
 
-			*wvpData = worldMatrix;
+			wvpData ->World= worldMatrix;
+
+			wvpData->WVP = worldMatrix;
 
 		}
 
