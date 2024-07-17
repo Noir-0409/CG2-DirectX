@@ -1523,6 +1523,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start].position.z = cos(lat) * sin(lon);
 			vertexData[start].position.w = 1.0f;
 			vertexData[start].texcoord = { u, v };
+			vertexData[start].normal.x = vertexData[start].position.x;
+			vertexData[start].normal.y = vertexData[start].position.y;
+			vertexData[start].normal.z = vertexData[start].position.z;
 
 			// 点b
 			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
@@ -1530,6 +1533,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
 			vertexData[start + 1].position.w = 1.0f;
 			vertexData[start + 1].texcoord = { u, v - 1.0f / float(kSubdivision) };
+			vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
+			vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
+			vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
 
 			// 点c
 			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
@@ -1537,6 +1543,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[start + 2].position.w = 1.0f;
 			vertexData[start + 2].texcoord = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
+			vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
+			vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
 
 			// 二枚目の三角形
 			// 点c
@@ -1545,6 +1554,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 3].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[start + 3].position.w = 1.0f;
 			vertexData[start + 3].texcoord = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 3].normal.x = vertexData[start + 3].position.x;
+			vertexData[start + 3].normal.y = vertexData[start + 3].position.y;
+			vertexData[start + 3].normal.z = vertexData[start + 3].position.z;
 
 			// 点b
 			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon);
@@ -1552,6 +1564,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon);
 			vertexData[start + 4].position.w = 1.0f;
 			vertexData[start + 4].texcoord = { u, v - 1.0f / float(kSubdivision) };
+			vertexData[start + 4].normal.x = vertexData[start + 4].position.x;
+			vertexData[start + 4].normal.y = vertexData[start + 4].position.y;
+			vertexData[start + 4].normal.z = vertexData[start + 4].position.z;
 
 			// 点d
 			vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
@@ -1559,6 +1574,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
 			vertexData[start + 5].position.w = 1.0f;
 			vertexData[start + 5].texcoord = { u + 1.0f / float(kSubdivision), v - 1.0f / float(kSubdivision) };
+			vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
+			vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
+			vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
 
 		}
 
