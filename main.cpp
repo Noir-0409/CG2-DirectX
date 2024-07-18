@@ -1660,7 +1660,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixDataSprite->WVP = MakeIdentity4x4();
 
 	transformationMatrixDataSprite->World = MakeIdentity4x4();
-	
+
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+
+	// リソースの先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+
+	// 使用するリソースのサイズはインデックス6つ分
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+
+	// インデックスはuint32_t
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
+	// インデックスリソースにデータを書き込む
+	uint32_t* indexDataSprite = nullptr;
+
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+
+	indexDataSprite[0] = 0;
+	indexDataSprite[1] = 1;
+	indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1;
+	indexDataSprite[4] = 3;
+	indexDataSprite[5] = 2;
+
 	D3D12_VIEWPORT viewport{};
 
 	viewport.Width = kClientWidth;
@@ -1844,6 +1869,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);
+
+			// 描画　ドローコール
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
@@ -1978,6 +2008,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResourceSprite->Release();
 
 	directionalLightResource->Release();
+
+	indexResourceSprite->Release();
 
 #ifdef _DEBUG
 
