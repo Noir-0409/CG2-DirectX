@@ -11,6 +11,8 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include <fstream>
+#include <sstream>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -125,6 +127,12 @@ Transform uvTransformSprite{
 	{1.0f,1.0f,1.0f},
 	{0.0f,0.0f,0.0f},
 	{0.0f,0.0f,0.0f}
+
+};
+
+struct ModelData {
+
+	std::vector<VertexData> vertices;
 
 };
 
@@ -850,6 +858,104 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 	handleGPU.ptr += (descriptorSize * index);
 
 	return handleGPU;
+
+}
+
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+
+	// 中で必要となる変数の宣言
+	ModelData modelData;
+
+	std::vector<Vector4> positions;
+
+	std::vector<Vector3> normals;
+
+	std::vector<Vector2> texcoords;
+
+	std::string line;
+
+	// ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);
+
+	assert(file.is_open());
+
+	// 実際にファイルを読み、ModelDataを構築
+	while (std::getline(file,line))
+	{
+
+		std::string identifier;
+
+		std::istringstream s(line);
+
+		// identifierに応じた処理
+		if (identifier == "v") {
+
+			Vector4 position;
+
+			s >> position.x >> position.y >> position.z;
+
+			position.w = 1.0f;
+
+			positions.push_back(position);
+
+		} else if (identifier == "vt") {
+
+			Vector2 texcoord;
+
+			s >> texcoord.x >> texcoord.y;
+
+			texcoords.push_back(texcoord);
+
+		} else if (identifier == "vn") {
+
+			Vector3 normal;
+
+			s >> normal.x >> normal.y >> normal.z;
+
+			normals.push_back(normal);
+
+		} else if (identifier == "f") {
+
+// 面は三角形限定
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+
+				std::string vertexDefinition;
+
+				s >> vertexDefinition;
+
+				// 頂点の要素へのIndex
+				std::istringstream v(vertexDefinition);
+
+				uint32_t elementIndices[3];
+
+				for (int32_t element = 0; element < 3; ++element) {
+
+					std::string index;
+
+					std::getline(v, index, '/');
+
+					elementIndices[element] = std::stoi(index);
+
+				}
+
+				// 要素へのIndexから、実際の要素の値を取得して頂点を構築
+				Vector4 position = positions[elementIndices[0] - 1];
+
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+
+				Vector3 normal = normals[elementIndices[2] - 1];
+
+				VertexData vertex = { position,texcoord,normal };
+
+				modelData.vertices.push_back(vertex);
+			}
+
+		}
+
+	}
+
+	// ModelDataを返す
+	return modelData;
 
 }
 
