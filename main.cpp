@@ -130,9 +130,17 @@ Transform uvTransformSprite{
 
 };
 
+struct MaterialData {
+
+	std::string textureFilePath;
+
+};
+
+
 struct ModelData {
 
 	std::vector<VertexData> vertices;
+	MaterialData material;
 
 };
 
@@ -861,6 +869,47 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 
 }
 
+
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+
+	// 中で必要になる変数の宣言
+	MaterialData materialData;
+
+	std::string line;
+
+	// ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);
+
+	assert(file.is_open());
+
+	// 実際にファイルを読み、MaterialDataを構築
+	while (std::getline(file, line)) {
+
+		std::string identifier;
+
+		std::istringstream s(line);
+
+		s >> identifier;
+
+		// identifierに応じた処理
+		if (identifier == "map_Kd") {
+
+			std::string textureFilename;
+
+			s >> textureFilename;
+
+			// 連結してファイルパスにする
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+
+		}
+
+	}
+
+	// MaterialDataを返す
+	return materialData;
+
+}
+
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 
 	// 中で必要となる変数の宣言
@@ -895,6 +944,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 			s >> position.x >> position.y >> position.z;
 
+			position.x *= -1.0f;
+
 			position.w = 1.0f;
 
 			positions.push_back(position);
@@ -905,6 +956,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 			s >> texcoord.x >> texcoord.y;
 
+			texcoord.y = 1.0f - texcoord.y;
+
 			texcoords.push_back(texcoord);
 
 		} else if (identifier == "vn") {
@@ -913,9 +966,13 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 			s >> normal.x >> normal.y >> normal.z;
 
+			normal.x *= -1.0f;
+
 			normals.push_back(normal);
 
 		} else if (identifier == "f") {
+
+			VertexData triangle[3];
 
 			// 面は三角形限定
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
@@ -946,11 +1003,30 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 				Vector3 normal = normals[elementIndices[2] - 1];
 
-				VertexData vertex = { position,texcoord,normal };
+				/*VertexData vertex = { position,texcoord,normal };
 
-				modelData.vertices.push_back(vertex);
+				modelData.vertices.push_back(vertex);*/
+
+				triangle[faceVertex] = { position,texcoord,normal };
 
 			}
+
+			// 頂点を逆にすることで周り順を逆にする
+			modelData.vertices.push_back(triangle[2]);
+
+			modelData.vertices.push_back(triangle[1]);
+
+			modelData.vertices.push_back(triangle[0]);
+
+		} else if (identifier == "mtllib") {
+
+			// materialTemplateLibraryのファイル名を取得
+			std::string materialFilename;
+
+			s >> materialFilename;
+
+			// 基本的にobjファイルと同一階層にmtlは存在させるのでディレクトリメイトファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
 
 		}
 
@@ -1193,8 +1269,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
+	// モデル読み込み
+	ModelData modelData = LoadObjFile("resources", "axis.obj");
+
+	// 頂点リソースを作る
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+
+	// 頂点バッファビューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの先頭のアドレスから使う
+
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
+
+	vertexBufferView.StrideInBytes = sizeof(VertexData); // 1頂点辺りのサイズ
+
+	// 頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
+
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
+
+
 	// 2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
 
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 
@@ -1567,28 +1666,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*VertexData* vertexData = nullptr;
 
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));*/
-
-	// モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
-
-	// 頂点リソースを作る
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
-
-	// 頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの先頭のアドレスから使う
-
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
-
-	vertexBufferView.StrideInBytes = sizeof(VertexData); // 1頂点辺りのサイズ
-
-	// 頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
-
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
 
 	//// 左下
 	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
@@ -2025,7 +2102,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			
-			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
 			//commandList->DrawInstanced(1536, 1, 0, 0);
 
