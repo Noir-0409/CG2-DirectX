@@ -1745,103 +1745,103 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//vertexData[5].normal.y = vertexData[5].position.y;
 	//vertexData[5].normal.z = vertexData[5].position.z;
 
-	//uint32_t latIndex = 0; // 緯度
+	uint32_t latIndex = 0; // 緯度
 
-	//uint32_t lonIndex = 0; // 経度
+	uint32_t lonIndex = 0; // 経度
 
-	//uint32_t kSubdivision = 16; // 分割数
+	uint32_t kSubdivision = 16; // 分割数
 
-	//uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
+	uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
 
-	//float pi = 3.14f;
+	float pi = 3.14f;
 
-	//// 経度分割1つ分の角度 Φd
-	//const float kLonEvery = pi * 2.0f / float(kSubdivision);
+	// 経度分割1つ分の角度 Φd
+	const float kLonEvery = pi * 2.0f / float(kSubdivision);
 
-	//// 緯度分割1つ分の角度 Θd
-	//const float kLatEvery = pi / float(kSubdivision);
+	// 緯度分割1つ分の角度 Θd
+	const float kLatEvery = pi / float(kSubdivision);
 
-	//// 緯度の方向に分割
-	//for (latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+	// 緯度の方向に分割
+	for (latIndex = 0; latIndex < kSubdivision; ++latIndex) {
 
-	//	float lat = -pi / 2.0f + kLatEvery * latIndex;// Θ
+		float lat = -pi / 2.0f + kLatEvery * latIndex;// Θ
 
-	//	// 経度の方向に分割しながら線を描く
-	//	// 1枚目の三角形
-	//	for (lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+		// 経度の方向に分割しながら線を描く
+		// 1枚目の三角形
+		for (lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
 
-	//		uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
 
-	//		float lon = lonIndex * kLonEvery;// Φ
+			float lon = lonIndex * kLonEvery;// Φ
 
-	//		float u = float(lonIndex) / float(kSubdivision);
+			float u = float(lonIndex) / float(kSubdivision);
 
-	//		float v = 1.0f - float(latIndex) / float(kSubdivision);
+			float v = 1.0f - float(latIndex) / float(kSubdivision);
 
-	//		// 頂点データを入力。基準点a
-	//		vertexData[start].position.x = cos(lat) * cos(lon);
-	//		vertexData[start].position.y = sin(lat);
-	//		vertexData[start].position.z = cos(lat) * sin(lon);
-	//		vertexData[start].position.w = 1.0f;
-	//		vertexData[start].texcoord = { u, v };
-	//		vertexData[start].normal.x = vertexData[start].position.x;
-	//		vertexData[start].normal.y = vertexData[start].position.y;
-	//		vertexData[start].normal.z = vertexData[start].position.z;
+			// 頂点データを入力。基準点a
+			vertexData[start].position.x = cos(lat) * cos(lon);
+			vertexData[start].position.y = sin(lat);
+			vertexData[start].position.z = cos(lat) * sin(lon);
+			vertexData[start].position.w = 1.0f;
+			vertexData[start].texcoord = { u, v };
+			vertexData[start].normal.x = vertexData[start].position.x;
+			vertexData[start].normal.y = vertexData[start].position.y;
+			vertexData[start].normal.z = vertexData[start].position.z;
 
-	//		// 点b
-	//		vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-	//		vertexData[start + 1].position.y = sin(lat + kLatEvery);
-	//		vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-	//		vertexData[start + 1].position.w = 1.0f;
-	//		vertexData[start + 1].texcoord = { u, v - 1.0f / float(kSubdivision) };
-	//		vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
-	//		vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
-	//		vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
+			// 点b
+			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexData[start + 1].position.y = sin(lat + kLatEvery);
+			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 1].position.w = 1.0f;
+			vertexData[start + 1].texcoord = { u, v - 1.0f / float(kSubdivision) };
+			vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
+			vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
+			vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
 
-	//		// 点c
-	//		vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-	//		vertexData[start + 2].position.y = sin(lat);
-	//		vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-	//		vertexData[start + 2].position.w = 1.0f;
-	//		vertexData[start + 2].texcoord = { u + 1.0f / float(kSubdivision), v };
-	//		vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
-	//		vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
-	//		vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
+			// 点c
+			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[start + 2].position.y = sin(lat);
+			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexData[start + 2].position.w = 1.0f;
+			vertexData[start + 2].texcoord = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
+			vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
+			vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
 
-	//		// 二枚目の三角形
-	//		// 点c
-	//		vertexData[start + 3].position.x = cos(lat) * cos(lon + kLonEvery);
-	//		vertexData[start + 3].position.y = sin(lat);
-	//		vertexData[start + 3].position.z = cos(lat) * sin(lon + kLonEvery);
-	//		vertexData[start + 3].position.w = 1.0f;
-	//		vertexData[start + 3].texcoord = { u + 1.0f / float(kSubdivision), v };
-	//		vertexData[start + 3].normal.x = vertexData[start + 3].position.x;
-	//		vertexData[start + 3].normal.y = vertexData[start + 3].position.y;
-	//		vertexData[start + 3].normal.z = vertexData[start + 3].position.z;
+			// 二枚目の三角形
+			// 点c
+			vertexData[start + 3].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[start + 3].position.y = sin(lat);
+			vertexData[start + 3].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexData[start + 3].position.w = 1.0f;
+			vertexData[start + 3].texcoord = { u + 1.0f / float(kSubdivision), v };
+			vertexData[start + 3].normal.x = vertexData[start + 3].position.x;
+			vertexData[start + 3].normal.y = vertexData[start + 3].position.y;
+			vertexData[start + 3].normal.z = vertexData[start + 3].position.z;
 
-	//		// 点b
-	//		vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon);
-	//		vertexData[start + 4].position.y = sin(lat + kLatEvery);
-	//		vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon);
-	//		vertexData[start + 4].position.w = 1.0f;
-	//		vertexData[start + 4].texcoord = { u, v - 1.0f / float(kSubdivision) };
-	//		vertexData[start + 4].normal.x = vertexData[start + 4].position.x;
-	//		vertexData[start + 4].normal.y = vertexData[start + 4].position.y;
-	//		vertexData[start + 4].normal.z = vertexData[start + 4].position.z;
+			// 点b
+			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexData[start + 4].position.y = sin(lat + kLatEvery);
+			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 4].position.w = 1.0f;
+			vertexData[start + 4].texcoord = { u, v - 1.0f / float(kSubdivision) };
+			vertexData[start + 4].normal.x = vertexData[start + 4].position.x;
+			vertexData[start + 4].normal.y = vertexData[start + 4].position.y;
+			vertexData[start + 4].normal.z = vertexData[start + 4].position.z;
 
-	//		// 点d
-	//		vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-	//		vertexData[start + 5].position.y = sin(lat + kLatEvery);
-	//		vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-	//		vertexData[start + 5].position.w = 1.0f;
-	//		vertexData[start + 5].texcoord = { u + 1.0f / float(kSubdivision), v - 1.0f / float(kSubdivision) };
-	//		vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
-	//		vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
-	//		vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
+			// 点d
+			vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+			vertexData[start + 5].position.y = sin(lat + kLatEvery);
+			vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			vertexData[start + 5].position.w = 1.0f;
+			vertexData[start + 5].texcoord = { u + 1.0f / float(kSubdivision), v - 1.0f / float(kSubdivision) };
+			vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
+			vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
+			vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
 
-	//	}
+		}
 
-	//}
+	}
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
 
@@ -2140,9 +2140,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-			//commandList->DrawInstanced(1536, 1, 0, 0);
+			commandList->DrawInstanced(1536, 1, 0, 0);
 
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
@@ -2162,7 +2162,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
 			// 描画　ドローコール
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
