@@ -263,9 +263,9 @@ IDxcBlob* CompileShader(
 
 	Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 
-	shaderSource->Release();
+	/*shaderSource->Release();
 
-	shaderResult->Release();
+	shaderResult->Release();*/
 
 	return shaderBlob;
 
@@ -1226,7 +1226,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		infoQueue->PushStorageFilter(&filter);
 
-		infoQueue->Release();
+	//	infoQueue->Release();
 
 	}
 
