@@ -1641,32 +1641,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
-	//// 1枚目の三角形
-	//vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
-	//vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	//vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
-
-	//vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	//vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	//vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
-
-	//vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	//vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-	//vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
-
-	//// 2枚目の三角形
-	//vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
-	//vertexDataSprite[3].texcoord = { 0.0f,0.0f };
-	//vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-
-	//vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	//vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	//vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-
-	//vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
-	//vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-	//vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
-
 	// 1枚目の三角形
 	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
@@ -1681,9 +1655,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
 
 	// 2枚目の三角形
-	vertexDataSprite[3].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
+	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
 	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
+
+	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
+	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
+
+	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
+	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 
 	// Sprite用のTransformationMatrix用のリソースを作る
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
