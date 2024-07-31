@@ -102,7 +102,7 @@ struct DirectionalLight {
 Transform transform{
 
 	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
+	{0.0f,3.150f,0.0f},
 	{0.0f,0.0f,0.0f}
 
 };
@@ -1306,7 +1306,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	// モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "axis.obj");
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
 
 	// 頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -2064,10 +2064,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
 			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+			ImGui::DragFloat3("sprite.transform", &transformSprite.translate.x, 0.3f);
+			ImGui::DragFloat2("sprite.scale", &transformSprite.scale.x, 0.01f);
+			ImGui::DragFloat2("sprite.rotate", &transformSprite.rotate.x, 0.01f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			ImGui::DragFloat3("Light.color", &directionalLightData->color.x, 0.01f);
-			ImGui::DragFloat3("Light.direction", &directionalLightData->direction.x, 0.01f);
-			ImGui::DragFloat3("Light.intensity", &directionalLightData->intensity, 0.01f);
+			ImGui::SliderAngle("Light.color", &directionalLightData->color.x, 0.01f);
+			ImGui::SliderAngle("Light.direction", &directionalLightData->direction.x, 0.01f);
+			ImGui::SliderAngle("Light.intensity", &directionalLightData->intensity, 0.01f);
 			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
@@ -2162,7 +2165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
 			// 描画　ドローコール
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
