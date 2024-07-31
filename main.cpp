@@ -2067,7 +2067,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("sprite.transform", &transformSprite.translate.x, 0.3f);
 			ImGui::DragFloat2("sprite.scale", &transformSprite.scale.x, 0.01f);
 			ImGui::DragFloat2("sprite.rotate", &transformSprite.rotate.x, 0.01f);
-			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+			//ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::SliderAngle("Light.color", &directionalLightData->color.x, 0.01f);
 			ImGui::SliderAngle("Light.direction", &directionalLightData->direction.x, 0.01f);
 			ImGui::SliderAngle("Light.intensity", &directionalLightData->intensity, 0.01f);
