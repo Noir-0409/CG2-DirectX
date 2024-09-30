@@ -1630,8 +1630,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl",
 
-
-		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 
 	assert(pixelShaderBlob != nullptr);
 
