@@ -1049,6 +1049,25 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 }
 
+enum BlendMode {
+
+	//ブレンド無し
+	kBlendModeNone,
+	//通常αブレンド。デフォルト
+	kBlendModeNormal,
+	//加算
+	kBlendModeAdd,
+	//減算
+	kBlendModeSubtract,
+	//乗算
+	kBlendModeMultply,
+	//スクリーン
+	kBlendModeScreen,
+	//利用してはいけない
+	kCountOfBlendMode
+
+};
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1615,6 +1634,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask =
 
 		D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC1_ALPHA;
+
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 
