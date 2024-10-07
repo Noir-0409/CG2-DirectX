@@ -1,3 +1,5 @@
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
 #include <Windows.h>
 #include <cstdint>
 #include <string>
@@ -21,6 +23,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 struct Vector2 {
 
