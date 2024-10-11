@@ -2145,7 +2145,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//commandList->DrawInstanced(1536, 1, 0, 0);
 
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 10, 0, 0);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
