@@ -1892,9 +1892,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 3);
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 3);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	Transform transforms[kNumInstance];
+
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+
+		transforms[index].scale = { 1.0f,1.0f,1.0f };
+		transforms[index].rotate = { 0.0f,0.0f,0.0f };
+		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+	}
+
+	/*D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);*/
 
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
@@ -2052,6 +2064,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
+			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
+
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+
 			// 描画　ドローコール
 			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
@@ -2099,6 +2115,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			wvpData->WVP = worldMatrix;
 
+			for (uint32_t index = 0; index < kNumInstance; ++index) {
+
+				Matrix4x4 worldMatrix = MakeAffinMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+
+				Matrix4x4 eorldViewProjectionMatrix = Multiply(worldMatrix, worldViewProjectionMatrix);
+
+				instancingData[index].WVP = worldViewProjectionMatrix;
+
+				instancingData[index].World = worldMatrix;
+
+			}
+
 		}
 
 	}
@@ -2112,76 +2140,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 
 	CloseHandle(fenceEvent);
-
-	/*fence->Release();
-
-	rtvDescriptorHeap->Release();
-
-	srvDescriptorHeap->Release();
-
-	swapChainResources[0]->Release();
-
-	swapChainResources[1]->Release();
-
-	swapChain->Release();
-
-	commandList->Release();
-
-	commandAllocator->Release();
-
-	commandQueue->Release();
-
-	device->Release();
-
-	useAdapter->Release();
-
-	dxgiFactory->Release();
-
-	vertexResource->Release();
-
-	graphicsPipelineState->Release();
-
-	signatureBlob->Release();
-
-	if (errorBlob) {
-
-		errorBlob->Release();
-
-	}
-
-	rootSignature->Release();
-
-	pixelShaderBlob->Release();
-
-	vertexShaderBlob->Release();
-
-	materialResource->Release();
-
-	wvpResource->Release();
-
-	textureResource->Release();
-
-	textureResource2->Release();
-
-	depthStencilResource->Release();
-
-	dsvDescriptorHeap->Release();
-
-	transformationMatrixResourceSprite->Release();
-
-	vertexResourceSprite->Release();
-
-	materialResourceSprite->Release();
-
-	directionalLightResource->Release();
-
-	indexResourceSprite->Release();
-
-#ifdef _DEBUG
-
-	debugController->Release();
-
-#endif*/
 
 	CloseWindow(hwnd);
 
