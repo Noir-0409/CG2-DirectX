@@ -1,4 +1,5 @@
 #include "Windows.h"
+#include <dinput.h>
 
 #pragma once
 
