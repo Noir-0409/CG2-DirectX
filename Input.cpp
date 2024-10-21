@@ -1,7 +1,11 @@
+#define DIRECTIONINPUT_VERSION
 #include "Input.h"
 #include <dinput.h>
 #include <cassert>
 #include <wrl.h>
+
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
