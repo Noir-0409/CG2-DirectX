@@ -1,4 +1,3 @@
-#define DIRECTINPUT_VERSION 0x0800
 #include <Windows.h>
 #include <cstdint>
 #include <string>
