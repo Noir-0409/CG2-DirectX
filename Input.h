@@ -18,9 +18,16 @@ void Initialize(HINSTANCE hInstance,HWND hwnd);
 
 void Update();
 
+bool PushKey(BYTE KeyNumber);
+
 private:
 
 //キーボードのデバイス
 	Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard;
+
+//全キーの状態
+	BYTE key[256] = {};
+
+
 
 };

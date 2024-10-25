@@ -1887,6 +1887,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//}
 
+			if (input->PushKey(DIK_0)) {
+
+				OutputDebugStringA("HIt 0\n");
+
+			}
+
 			//各種行列の計算
 			Matrix4x4 worldMatrix = MakeAffinMatrix(transform.scale, transform.rotate, transform.translate);
 
