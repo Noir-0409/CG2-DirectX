@@ -1107,6 +1107,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Input* input = nullptr;
 	input = new Input();
 	input->Initialize(wc.hInstance,hwnd);
+	input->Update();
 
 #pragma endregion
 
@@ -1878,19 +1879,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::NewFrame();
 
-			//キーボード情報の取得開始
-			keyboard->Acquire();
+			
+			////キーが押されていたら
+			//if (key[DIK_0]) {
 
-			//全キーの入力状態を取得
-			BYTE key[256] = {};
-			keyboard->GetDeviceState(sizeof(key), key);
+			//	OutputDebugStringA("HIt 0\n");
 
-			//キーが押されていたら
-			if (key[DIK_0]) {
-
-				OutputDebugStringA("HIt 0\n");
-
-			}
+			//}
 
 			//各種行列の計算
 			Matrix4x4 worldMatrix = MakeAffinMatrix(transform.scale, transform.rotate, transform.translate);
