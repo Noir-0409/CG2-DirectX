@@ -1,5 +1,4 @@
 #include <Windows.h>
-#include <cstdint>
 #include <string>
 #include <format>
 #include <d3d12.h>
@@ -7,7 +6,6 @@
 #include <cassert>
 #include <dxgidebug.h>
 #include <dxcapi.h>
-#include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
@@ -15,8 +13,9 @@
 #include <sstream>
 #include <wrl.h>
 #include "Input.h"
+#include "WinApp.h"
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -272,7 +271,7 @@ IDxcBlob* CompileShader(
 
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+/*LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 
@@ -292,7 +291,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 
-}
+}*/
 
 /*ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t size)*/
 
@@ -1070,7 +1069,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Windowの生成
 
-	WNDCLASS wc{};
+	/*WNDCLASS wc{};
 
 	wc.lpfnWndProc = WindowProc;
 
@@ -1102,14 +1101,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		wc.hInstance,
 		nullptr);
 
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(hwnd, SW_SHOW);*/
+
+	
+
+#pragma endregion
+
+	WinApp* winApp = nullptr;
+	winApp = new WinApp();
+	winApp->Initialize();
 
 	Input* input = nullptr;
 	input = new Input();
-	input->Initialize(wc.hInstance,hwnd);
+	input->Initialize(wc.hInstance, hwnd);
 	input->Update();
 
-#pragma endregion
+	
 
 #ifdef _DEBUG
 
@@ -2158,6 +2165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CloseWindow(hwnd);
 
 	delete input;
+	delete winApp;
 
 	//IDXGIDebug* debug;
 
