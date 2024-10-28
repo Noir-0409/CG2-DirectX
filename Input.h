@@ -8,6 +8,9 @@
 //入力
 class Input {
 
+//DirectInputの初期化
+Microsoft::WRL::ComPtr<IDirectInput8> directInput = nullptr;
+
 public:
 //namespace省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -20,6 +23,8 @@ void Update();
 
 bool PushKey(BYTE KeyNumber);
 
+bool TriggerKey(BYTE KeyNumber);
+
 private:
 
 //キーボードのデバイス
@@ -28,6 +33,6 @@ private:
 //全キーの状態
 	BYTE key[256] = {};
 
-
+	BYTE keyPre[256] = {};
 
 };

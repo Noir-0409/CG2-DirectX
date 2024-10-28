@@ -1873,23 +1873,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 
+			input->Update();
+
 			ImGui_ImplDX12_NewFrame();
 
 			ImGui_ImplWin32_NewFrame();
 
 			ImGui::NewFrame();
 
-			
-			////キーが押されていたら
-			//if (key[DIK_0]) {
+			if (input->TriggerKey(DIK_0)) {
 
-			//	OutputDebugStringA("HIt 0\n");
-
-			//}
-
-			if (input->PushKey(DIK_0)) {
-
-				OutputDebugStringA("HIt 0\n");
+				OutputDebugStringA("Hit 0\n");
 
 			}
 
