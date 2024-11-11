@@ -1,10 +1,10 @@
+#pragma once
+
 #define DIRECTIONINPUT_VERSION
 #include "Windows.h"
 #include <dinput.h>
 #include <wrl.h>
 #include "WinApp.h"
-
-#pragma once
 
 //入力
 class Input {
