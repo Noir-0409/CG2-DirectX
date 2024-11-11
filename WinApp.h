@@ -15,6 +15,19 @@ public:
 
 	void Update();
 
+	HWND GetHwnd() const { return hwnd; }
+
+	HINSTANCE GetHInstance() const { return wc.hInstance; }
+
+	const int32_t kClientWidth = 1280;
+	const int32_t kClientHeight = 720;
+
 private:
+
+//ウィンドウハンドル
+	HWND hwnd;
+
+//ウィンドウクラスの設定
+WNDCLASS wc{};
 
 };

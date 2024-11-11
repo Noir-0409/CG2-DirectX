@@ -1053,7 +1053,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Input* input = nullptr;
 	input = new Input();
-	input->Initialize(wc.hInstance, hwnd);
+	input->Initialize(winApp->GetHInstance(),winApp->GetHwnd());
 	input->Update();
 
 	
@@ -1225,15 +1225,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region SwapChainの生成
 
-	//IDXGISwapChain4* swapChain = nullptr;
-
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
-	swapChainDesc.Width = kClientWidth;
+	swapChainDesc.Width = WinApp::kClientWidth;
 
-	swapChainDesc.Height = kClientHeight;
+	swapChainDesc.Height = WinApp::kClientHeight;
 
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
@@ -1245,7 +1243,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 
 	assert(SUCCEEDED(hr));
 
