@@ -2,6 +2,7 @@
 #include "Windows.h"
 #include <dinput.h>
 #include <wrl.h>
+#include "WinApp.h"
 
 #pragma once
 
@@ -17,7 +18,7 @@ public:
 
 public:
 
-void Initialize(HINSTANCE hInstance,HWND hwnd);
+void Initialize(WinApp* winApp);
 
 void Update();
 
@@ -32,7 +33,9 @@ private:
 
 //全キーの状態
 	BYTE key[256] = {};
-
 	BYTE keyPre[256] = {};
+
+//WindowsApi
+	WinApp* winApp = nullptr;
 
 };

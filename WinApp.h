@@ -1,6 +1,7 @@
 #pragma once
 #include "Windows.h"
 #include <wrl.h>
+#include <cstdint>
 
 //WindowsAPI
 class WinApp {
@@ -14,6 +15,9 @@ public:
 	void Initialize();
 
 	void Update();
+
+	//終了
+	void Finalize();
 
 	static const int32_t kClientWidth = 1280;
 	static const int32_t kClientHeight = 720;

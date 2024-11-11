@@ -5,12 +5,14 @@
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
-void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
+void Input::Initialize(WinApp* winApp)
 {
+
+	this->winApp = winApp;
 
 	HRESULT result;
 
-	result = DirectInput8Create(hInstance, DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8,
+	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8,
 		(void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
@@ -24,7 +26,7 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 	assert(SUCCEEDED(restrict));
 
 	//排他制御レベルのセット
-	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 
 }

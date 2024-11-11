@@ -1053,7 +1053,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Input* input = nullptr;
 	input = new Input();
-	input->Initialize(winApp->GetHInstance(), winApp->GetHwnd());
+	input->Initialize(winApp);
 	input->Update();
 
 	
@@ -2102,8 +2102,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #endif*/
 
-	CloseWindow(winApp->GetHwnd());
-
+	
 	delete input;
 	delete winApp;
 
@@ -2111,7 +2110,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Log("Hello,DirectX!\n");
 
-	CoUninitialize();
+	winApp->Finalize();
 
 	return 0;
 
