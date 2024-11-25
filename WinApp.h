@@ -29,7 +29,7 @@ public:
 private:
 
 	//ウィンドウハンドル
-	HWND hwnd = nullptr;	
+	HWND hwnd;	
 
 	//ウィンドウクラスの設定
 	WNDCLASS wc{};

@@ -12,7 +12,7 @@ void Input::Initialize(WinApp* winApp)
 
 	HRESULT result;
 
-	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8,
+	result = DirectInput8Create(winApp->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
@@ -23,7 +23,7 @@ void Input::Initialize(WinApp* winApp)
 
 	//入力データ形式のセット
 	result = keyboard->SetDataFormat(&c_dfDIKeyboard); //標準形式
-	assert(SUCCEEDED(restrict));
+	assert(SUCCEEDED(result));
 
 	//排他制御レベルのセット
 	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);

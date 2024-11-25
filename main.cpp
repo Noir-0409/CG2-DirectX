@@ -270,7 +270,7 @@ IDxcBlob* CompileShader(
 	return shaderBlob;
 
 }
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device,size_t size)
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t size)
 {
 
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
@@ -693,9 +693,9 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 
 }
 
-/*ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)*/ 
+/*ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)*/
 
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device,const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata)
 {
 
 	// metaDataを基にResourceの設定
@@ -1056,7 +1056,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input->Initialize(winApp);
 	input->Update();
 
-	
+
 
 #ifdef _DEBUG
 
@@ -1225,8 +1225,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region SwapChainの生成
 
-	//IDXGISwapChain4* swapChain = nullptr;
-
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain = nullptr;
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -1278,7 +1276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
 
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
 
 	// 2枚目のTextureを読んで転送する
@@ -1337,7 +1335,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// SRVの生成
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
-	
+
 	// SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 0);
 
@@ -1525,9 +1523,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	hr = device->CreateRootSignature(0,
 
-	signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
 
-	IID_PPV_ARGS(&rootSignature));
+		IID_PPV_ARGS(&rootSignature));
 
 	assert(SUCCEEDED(hr));
 
@@ -1583,7 +1581,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl",
 
-	L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 
 	assert(pixelShaderBlob != nullptr);
 
@@ -1650,7 +1648,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialData->enableLighting = true;
 
-	materialData->color= Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	materialData->uvTransform = MakeIdentity4x4();
 
@@ -1660,7 +1658,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 
-	wvpData->World= MakeIdentity4x4();
+	wvpData->World = MakeIdentity4x4();
 
 	wvpData->WVP = MakeIdentity4x4();
 
@@ -1947,7 +1945,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			
+
 			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
 			//commandList->DrawInstanced(1536, 1, 0, 0);
@@ -2014,7 +2012,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//transform.rotate.y += 0.02f;
 
-			wvpData ->World= worldMatrix;
+			wvpData->World = worldMatrix;
 
 			wvpData->WVP = worldMatrix;
 
@@ -2032,85 +2030,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CloseHandle(fenceEvent);
 
-	/*fence->Release();
+	winApp->Finalize();
 
-	rtvDescriptorHeap->Release();
-
-	srvDescriptorHeap->Release();
-
-	swapChainResources[0]->Release();
-
-	swapChainResources[1]->Release();
-
-	swapChain->Release();
-
-	commandList->Release();
-
-	commandAllocator->Release();
-
-	commandQueue->Release();
-
-	device->Release();
-
-	useAdapter->Release();
-
-	dxgiFactory->Release();
-
-	vertexResource->Release();
-
-	graphicsPipelineState->Release();
-
-	signatureBlob->Release();
-
-	if (errorBlob) {
-
-		errorBlob->Release();
-
-	}
-
-	rootSignature->Release();
-
-	pixelShaderBlob->Release();
-
-	vertexShaderBlob->Release();
-
-	materialResource->Release();
-
-	wvpResource->Release();
-
-	textureResource->Release();
-
-	textureResource2->Release();
-
-	depthStencilResource->Release();
-
-	dsvDescriptorHeap->Release();
-
-	transformationMatrixResourceSprite->Release();
-
-	vertexResourceSprite->Release();
-
-	materialResourceSprite->Release();
-
-	directionalLightResource->Release();
-
-	indexResourceSprite->Release();
-
-#ifdef _DEBUG
-
-	debugController->Release();
-
-#endif*/
-
-	
 	delete input;
 	delete winApp;
 
-	//IDXGIDebug* debug;
-
 	Log("Hello,DirectX!\n");
-
-	winApp->Finalize();
 
 	return 0;
 
