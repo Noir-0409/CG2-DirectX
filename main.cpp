@@ -1725,13 +1725,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
 	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
 
-	/*vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };*/
 
 	// Sprite用のTransformationMatrix用のリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -1809,14 +1802,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg{};
 
-	while (msg.message != WM_QUIT) {
+	while (true) {
 
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		if (winApp->ProcessMessage()) {
 
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			break;
 
-		} else {
+		} 
 
 			input->Update();
 
@@ -2017,10 +2009,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			wvpData->WVP = worldMatrix;
 
 		}
-
-	}
-
-
 
 	ImGui_ImplDX12_Shutdown();
 
