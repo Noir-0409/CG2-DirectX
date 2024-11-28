@@ -98,6 +98,17 @@ struct DirectionalLight {
 
 };
 
+struct Particle {
+
+	Transform transform;
+	Vector3 velocity;
+
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+
+};
+
 //Transform変数の作成
 Transform transform{
 
@@ -1923,18 +1934,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
-			Transform transforms[kNumInstance];
+			//Transform transforms[kNumInstance];
+			Particle particles[kNumInstance];
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
-				transforms[index].scale = { 1.0f,1.0f,1.0f };
-				transforms[index].rotate = { 0.0f,3.14f,0.0f };
-				transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+				particles[index].scale = { 1.0f,1.0f,1.0f };
+				particles[index].rotate = { 0.0f,3.14f,0.0f };
+				particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 
 			}
 
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
-				Matrix4x4 worldMatrix = MakeAffinMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+				Matrix4x4 worldMatrix = MakeAffinMatrix(particles[index].scale, particles[index].rotate, particles[index].translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				instancingData[index].WVP = worldViewProjectionMatrix;
