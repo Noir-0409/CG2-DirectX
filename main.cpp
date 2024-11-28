@@ -1378,17 +1378,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 2);
 
 	// 先頭はimGuiが使っているのでその次を使う
-	textureSrvHandleCPU2.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	/*textureSrvHandleCPU2.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	textureSrvHandleGPU2.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureSrvHandleGPU2.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);*/
 
 	// SRVの生成
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 	
 	// SRVを作成するDescriptorHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 0);
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 1);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 0);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 1);
 
 	// 先頭はimGuiが使っているのでその次を使う
 	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -1698,7 +1698,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const uint32_t kNumInstance = 10; //インスタンス数
 
 	//Instancing用のtransformationMatrixリソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) + kNumInstance);
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
 
 	//書き込むためのアドレスを取得
 	TransformationMatrix* instancingData = nullptr;
@@ -1927,7 +1927,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
 				transforms[index].scale = { 1.0f,1.0f,1.0f };
-				transforms[index].rotate = { 0.0f,0.0f,0.0f };
+				transforms[index].rotate = { 0.0f,3.14f,0.0f };
 				transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 
 			}
@@ -2038,7 +2038,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 
