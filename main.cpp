@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <wrl.h>
+#include <random>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -1893,6 +1894,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const float kDeltaTime = 1.0f / 60.0f;
 
+	std::random_device seedGenerator;
+	std::mt19937 randomEngine(seedGenerator());
+
+	std::uniform_real_distribution<float> distributon(-1.0f, 1.0f);
+
 	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
 
@@ -1900,6 +1906,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles[index].rotate = { 0.0f,3.14f,0.0f };
 		particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 		particles[index].velocity = { 0.0f,1.0f,0.0f }; //速度を上向きに設定
+
+		particles[index].translate = { distributon(randomEngine),distributon(randomEngine),distributon(randomEngine) };
+		particles[index].velocity = { distributon(randomEngine),distributon(randomEngine),distributon(randomEngine) };
 		
 
 	}
