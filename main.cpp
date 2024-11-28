@@ -100,7 +100,6 @@ struct DirectionalLight {
 
 struct Particle {
 
-	Transform transform;
 	Vector3 velocity;
 
 	Vector3 scale;
@@ -304,8 +303,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 }
 
-/*ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t size)*/
-
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device,size_t size)
 {
 
@@ -343,7 +340,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComP
 
 }
 
-/*ID3D12DescriptorHeap* CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)*/
+
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
 
@@ -1896,6 +1893,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const float kDeltaTime = 1.0f / 60.0f;
 
+	Particle particles[kNumInstance];
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+
+		particles[index].scale = { 1.0f,1.0f,1.0f };
+		particles[index].rotate = { 0.0f,3.14f,0.0f };
+		particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index].velocity = { 0.0f,1.0f,0.0f }; //速度を上向きに設定
+		
+
+	}
+
 	MSG msg{};
 
 	while (msg.message != WM_QUIT) {
@@ -1936,16 +1944,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
-			Particle particles[kNumInstance];
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
-				particles[index].scale = { 1.0f,1.0f,1.0f };
-				particles[index].rotate = { 0.0f,3.14f,0.0f };
-				particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
-				particles[index].velocity = { 0.0f,1.0f,0.0f }; //速度を上向きに設定
-				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				
+				particles[index].translate.x += particles[index].velocity.x * kDeltaTime;
+				particles[index].translate.y += particles[index].velocity.y * kDeltaTime;
+				particles[index].translate.z += particles[index].velocity.z * kDeltaTime;
 
 			}
 
