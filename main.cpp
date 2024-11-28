@@ -1894,6 +1894,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool useMonsterBall = true;
 
+	const float kDeltaTime = 1.0f / 60.0f;
+
 	MSG msg{};
 
 	while (msg.message != WM_QUIT) {
@@ -1934,13 +1936,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
-			//Transform transforms[kNumInstance];
 			Particle particles[kNumInstance];
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
 				particles[index].scale = { 1.0f,1.0f,1.0f };
 				particles[index].rotate = { 0.0f,3.14f,0.0f };
 				particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+				particles[index].velocity = { 0.0f,1.0f,0.0f }; //速度を上向きに設定
+				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
+				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
 
 			}
 
