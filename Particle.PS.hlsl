@@ -28,9 +28,8 @@ struct DirectionalLight
 
 };
 
-ConstantBuffer<Material> gMaterial : register(b0);
 
-//ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
+ConstantBuffer<Material> gMaterial : register(b0);
 
 PixelShaderOutput main(VertexShaderOutput input)
 {
@@ -38,7 +37,7 @@ PixelShaderOutput main(VertexShaderOutput input)
 	PixelShaderOutput output;
 	float4 transformdUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
 	float4 textureColor = gTexture.Sample(gSampler, transformdUV.xy);
-	output.color = gMaterial.color * textureColor;
+    output.color = gMaterial.color * textureColor * input.color;
 	
 	if (output.color.a == 0.0)
 	{
