@@ -1058,6 +1058,22 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 }
 
+Particle MakeNewParticle(std::mt19937& randomEngine, uint32_t index) {
+	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
+	Particle particle;
+	particle.scale = { 1.0f, 1.0f, 1.0f };
+	particle.rotate = { 0.0f, 3.14f, 0.0f };
+	particle.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
+	particle.velocity = { 0.0f, 1.0f, 0.0f }; //速度を上向きに設定
+
+	// ランダム値で更新
+	particle.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+
+	return particle;
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1071,8 +1087,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-
-		//	debug->Release();
 
 	}
 
@@ -1130,8 +1144,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Factoryの生成
 
-	//IDXGIFactory7* dxgiFactory = nullptr;
-
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -1141,8 +1153,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region Adapterの生成
-
-	//IDXGIAdapter4* useAdapter = nullptr;
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> useAdapter = nullptr;
 
@@ -1897,20 +1907,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::random_device seedGenerator;
 	std::mt19937 randomEngine(seedGenerator());
 
-	std::uniform_real_distribution<float> distributon(-1.0f, 1.0f);
-
 	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-
-		particles[index].scale = { 1.0f,1.0f,1.0f };
-		particles[index].rotate = { 0.0f,3.14f,0.0f };
-		particles[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
-		particles[index].velocity = { 0.0f,1.0f,0.0f }; //速度を上向きに設定
-
-		particles[index].translate = { distributon(randomEngine),distributon(randomEngine),distributon(randomEngine) };
-		particles[index].velocity = { distributon(randomEngine),distributon(randomEngine),distributon(randomEngine) };
-		
-
+		particles[index] = MakeNewParticle(randomEngine, index);
 	}
 
 	MSG msg{};
