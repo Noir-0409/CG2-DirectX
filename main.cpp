@@ -270,6 +270,7 @@ IDxcBlob* CompileShader(
 	return shaderBlob;
 
 }
+
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t size)
 {
 
@@ -1092,7 +1093,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region CommadAllocatorの生成
 
-	//ID3D12CommandAllocator* commandAllocator = nullptr;
+	
 
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 
@@ -1104,7 +1105,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region CommandListの生成
 
-	//ID3D12GraphicsCommandList* commandList = nullptr;
+	
 
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 

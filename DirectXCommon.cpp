@@ -1,5 +1,7 @@
 #include "DirectXCommon.h"
 #include <cassert>
+#include "Logger.h"
+#include "StringUtility.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -9,11 +11,22 @@ using namespace Microsoft::WRL;
 void DirectXCommon::Initialize()
 {
 
+	//NULL検出
+	assert(winApp);
+
+	//メンバ変数に記録
+	this->winApp = winApp;
+
+}
+
+void DirectXCommon::DeviceInitialize()
+{
+
 	HRESULT hr;
 
 #ifdef _DEBUG
 
-	Microsoft::WRL::ComPtr < ID3D12InfoQueue> infoQueue = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
 
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
 
@@ -49,7 +62,7 @@ void DirectXCommon::Initialize()
 
 #endif
 
-#pragma region Factory�̐���
+#pragma region Factoryの生成
 
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
@@ -59,7 +72,7 @@ void DirectXCommon::Initialize()
 
 #pragma endregion
 
-#pragma region Adapter�̐���
+#pragma region Adapterの生成
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> useAdapter = nullptr;
 
@@ -74,7 +87,7 @@ void DirectXCommon::Initialize()
 
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 
-			Log(ConvertString(std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
+			Logger::Log(StringUtility::ConvertString(std::format(L"Use Adapter:{}\n", adapterDesc.Description)));
 
 			break;
 
@@ -89,7 +102,7 @@ void DirectXCommon::Initialize()
 #pragma endregion
 
 
-#pragma region Device�̍쐬
+#pragma region Deviceの作成
 
 	ComPtr < ID3D12Device> device = nullptr;
 
@@ -107,7 +120,7 @@ void DirectXCommon::Initialize()
 
 		if (SUCCEEDED(hr)) {
 
-			Log(std::format("FeatureLevel:{}\n", featureLevelStrings[i]));
+			Logger::Log(std::format("FeatureLevel:{}\n", featureLevelStrings[i]));
 
 			break;
 
@@ -117,8 +130,57 @@ void DirectXCommon::Initialize()
 
 	assert(device != nullptr);
 
-	Log("Complete createD3D12Device!!\n");
+	Logger::Log("Complete createD3D12Device!!\n");
 
 #pragma endregion
 
+
+
+}
+
+void DirectXCommon::CommandInitialize()
+{
+
+
+
+}
+
+void DirectXCommon::SwapChainCreate()
+{
+}
+
+void DirectXCommon::ZBufferCreate()
+{
+}
+
+void DirectXCommon::DescriptorHeapCreate()
+{
+}
+
+void DirectXCommon::RTVInitialize()
+{
+}
+
+void DirectXCommon::ZStencilViewInitialize()
+{
+}
+
+void DirectXCommon::FenceCreate()
+{
+}
+
+void DirectXCommon::ViewPortRectInitialize()
+{
+}
+
+void DirectXCommon::ScissorRectInitialize()
+{
+}
+
+void DirectXCommon::DXCCompilerCreate()
+{
+}
+
+void DirectXCommon::ImGuiInitialize()
+{
 }
