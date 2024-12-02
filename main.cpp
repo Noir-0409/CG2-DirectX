@@ -1985,7 +1985,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					continue;
 
 				}
-				
+
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
 				particles[index].translate.x += particles[index].velocity.x * kDeltaTime;
 				particles[index].translate.y += particles[index].velocity.y * kDeltaTime;
 				particles[index].translate.z += particles[index].velocity.z * kDeltaTime;
@@ -1993,6 +1995,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[numInstance].WVP = worldViewProjectionMatrix;
 				instancingData[numInstance].World = worldMatrix;
 				instancingData[numInstance].color = particles[index].color;
+				instancingData[numInstance].color.w = alpha;
 				++numInstance;
 
 			}
