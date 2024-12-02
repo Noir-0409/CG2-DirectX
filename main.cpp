@@ -1973,7 +1973,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
+			uint32_t numInstance=0;
+
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+
+				Matrix4x4 worldMatrix = MakeAffinMatrix(particles[index].scale, particles[index].rotate, particles[index].translate);
+				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				if (particles[index].lifeTime <= particles[index].currentTime) {
 
@@ -1989,17 +1994,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[numInstance].World = worldMatrix;
 				instancingData[numInstance].color = particles[index].color;
 				++numInstance;
-
-			}
-
-			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-
-				Matrix4x4 worldMatrix = MakeAffinMatrix(particles[index].scale, particles[index].rotate, particles[index].translate);
-				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-
-				instancingData[index].WVP = worldViewProjectionMatrix;
-				instancingData[index].World = worldMatrix;
-				instancingData[index].color = particles[index].color;
 
 			}
 
@@ -2111,7 +2105,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
 			// 描画　ドローコール
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
