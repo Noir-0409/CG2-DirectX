@@ -39,13 +39,13 @@ void DXCCompilerCreate();
 
 void ImGuiInitialize();
 
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencialTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencialTextureResource( int32_t width, int32_t height);
 
 //SRVの指定番号のCPUデスクリプタハンドルを取得する
 D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 
 //SRVの指定番号のGPUデスクリプタハンドルを取得する
-D3D12_CPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
@@ -83,6 +83,8 @@ private:
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
 
 	//WindowsAPI
 	WinApp* winApp = nullptr;
