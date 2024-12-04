@@ -8,6 +8,13 @@
 #include "WinApp.h"
 #include <dxcapi.h>
 
+struct ModelData {
+
+	std::vector<VertexData> vertices;
+	MaterialData material;
+
+};
+
 //DirectX基盤
 class DirectXCommon {
 
@@ -48,6 +55,8 @@ D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t size);
 
 //スワップチェーンリソース
 std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
