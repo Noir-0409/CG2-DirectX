@@ -1077,9 +1077,6 @@ Particle MakeNewParticle(std::mt19937& randomEngine, uint32_t index) {
 	Particle particle;
 	particle.scale = { 1.0f, 1.0f, 1.0f };
 	particle.rotate = { 0.0f, 3.14f, 0.0f };
-	particle.translate = { index * 0.1f, index * 0.1f, index * 0.1f };
-	particle.velocity = { 0.0f, 1.0f, 0.0f }; //速度を上向きに設定
-
 	particle.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
