@@ -15,6 +15,7 @@
 #include <sstream>
 #include <wrl.h>
 #include <random>
+#include <numbers>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -1925,6 +1926,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool useMonsterBall = true;
 
+	bool useBillBoard = false;
+
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	std::random_device seedGenerator;
@@ -1977,6 +1980,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
+			Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+
+			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+			billboardMatrix.m[3][0] = 0.0f;
+			billboardMatrix.m[3][1] = 0.0f;
+			billboardMatrix.m[3][2] = 0.0f;
+
+			
+
 			uint32_t numInstance=0;
 
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
@@ -2023,6 +2035,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderAngle("Light.color", &directionalLightData->color.x, 0.01f);
 			ImGui::SliderAngle("Light.direction", &directionalLightData->direction.x, 0.01f);
 			ImGui::SliderAngle("Light.intensity", &directionalLightData->intensity, 0.01f);
+			ImGui::Checkbox("useBillBoared", &useBillBoard);
 			ImGui::End();
 
 			//ImGui::ShowDemoWindow();
