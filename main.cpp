@@ -1995,8 +1995,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			} else {
 				
-			worldMatrix = (scaleMatrix, billboardMatrix, translateMatrix); 
-			
+			//worldMatrix = Multiply(scaleMatrix, billboardMatrix, translateMatrix); 
+				worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
+
 			
 			}
 
