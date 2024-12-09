@@ -596,6 +596,36 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Micr
 
 }
 
+void DirectXCommon::PreDraw()
+{
+
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	D3D12_RESOURCE_BARRIER barrier{};
+
+	// 描画先のRTVとDSVを設定
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
+
+	//色をクリア
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
+	// 指定した深度で画面全体をクリア
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
+
+	commandList->RSSetViewports(1, &viewport);
+
+	commandList->RSSetScissorRects(1, &scissorRect);
+
+}
+
+void DirectXCommon::PostDraw()
+{
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
 {
 	return D3D12_CPU_DESCRIPTOR_HANDLE();

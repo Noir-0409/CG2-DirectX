@@ -140,6 +140,12 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::Com
 //スワップチェーンリソース
 std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 
+//描画前処理
+void PreDraw();
+
+//描画後処理
+void PostDraw();
+
 private:
 
 	HRESULT hr;
@@ -177,6 +183,8 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
 	//WindowsAPI
 	WinApp* winApp = nullptr;
