@@ -10,7 +10,7 @@
 
 using namespace Microsoft::WRL;
 
-void DirectXCommon::Initialize()
+void DirectXCommon::Initialize(WinApp* winApp)
 {
 
 	//NULL検出
@@ -18,6 +18,19 @@ void DirectXCommon::Initialize()
 
 	//メンバ変数に記録
 	this->winApp = winApp;
+
+	DeviceInitialize();
+	CommandInitialize();
+	SwapChainCreate();
+	DepthBufferCreate();
+	DescriptorHeapCreate();
+	RTVInitialize();
+	DepthStencilViewInitialize();
+	FenceCreate();
+	ViewPortRectInitialize();
+	ScissorRectInitialize();
+	DXCCompilerCreate();
+	ImGuiInitialize();
 
 }
 
@@ -136,7 +149,7 @@ hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始める
-
+	
 	descriptorRange[0].NumDescriptors = 1; // 数は1つ
 
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
@@ -220,42 +233,11 @@ void DirectXCommon::SwapChainCreate()
 
 }
 
-void DirectXCommon::ZBufferCreate()
+void DirectXCommon::DepthBufferCreate()
 {
 
-	// モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
-
-	// 頂点リソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
-
-	// 頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの先頭のアドレスから使う
-
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
-
-	vertexBufferView.StrideInBytes = sizeof(VertexData); // 1頂点辺りのサイズ
-
-	// 頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
-
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-
-
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
-
 	// DepthStencilTextureをウィンドウのサイズで作成
-	depthStencilResource = CreateDepthStencialTextureResource( WinApp::kClientWidth, WinApp::kClientHeight);
-	
-	// 描画先のRTVとSRVを設定
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-	// 指定した深度で画面全体をクリア
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	depthStencilResource = CreateDepthStencialTextureResource(WinApp::kClientWidth, WinApp::kClientHeight);
 
 }
 
@@ -290,7 +272,7 @@ void DirectXCommon::RTVInitialize()
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 	// RTVディスクリプタヒープの開始アドレスを取得
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	// ディスクリプタサイズを取得
 	UINT rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -303,6 +285,10 @@ void DirectXCommon::RTVInitialize()
 		// レンダーターゲットビューの生成
 		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandle);
 	}
+
+	// 描画先のRTVとSRVを設定
+	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
 }
 
 //void DirectXCommon::RTVInitialize()
@@ -338,7 +324,7 @@ void DirectXCommon::RTVInitialize()
 //
 //}
 
-void DirectXCommon::ZStencilViewInitialize()
+void DirectXCommon::DepthStencilViewInitialize()
 {
 
 	// DSVの設定
@@ -555,6 +541,58 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(Micro
 	assert(SUCCEEDED(hr));
 
 	return vertexResource;
+
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata)
+{
+	
+	// metaDataを基にResourceの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+
+	resourceDesc.Width = UINT(metadata.width); // Textureの幅
+
+	resourceDesc.Height = UINT(metadata.height); // Textureの高さ
+
+	resourceDesc.MipLevels = UINT16(metadata.mipLevels); // mipmapの数
+
+	resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize); // 奥行きor配列Textureの配列数
+
+	resourceDesc.Format = metadata.format;// Textureのformat
+
+	resourceDesc.SampleDesc.Count = 1; // サンプリングカウント。1固定
+
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension); // Textureの次元数
+
+	// 利用するHeapの設定
+	D3D12_HEAP_PROPERTIES heapProperties{};
+
+	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM; // 細かい設定を行う
+
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能
+
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置
+
+	// Resourceの生成
+	Microsoft::WRL::ComPtr < ID3D12Resource> resource = nullptr;
+
+	HRESULT hr = device->CreateCommittedResource(
+
+		&heapProperties, // Heapの設定
+
+		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし
+
+		&resourceDesc, // Resourceの設定
+
+		D3D12_RESOURCE_STATE_GENERIC_READ, // 初回のResourceState
+
+		nullptr, // Clear最適地。使わないためnullptr
+
+		IID_PPV_ARGS(&resource)); // 作成するResourceポインタへのポインタ
+
+	assert(SUCCEEDED(hr));
+
+	return resource;
 
 }
 

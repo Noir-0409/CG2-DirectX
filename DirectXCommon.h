@@ -7,11 +7,88 @@
 #include <dxgi1_6.h>
 #include "WinApp.h"
 #include <dxcapi.h>
+#include "externals/DirectXTex/DirectXTex.h"
+#include <array>
 
-struct ModelData {
+struct Vector2 {
 
-	std::vector<VertexData> vertices;
-	MaterialData material;
+	float x;
+	float y;
+
+};
+
+struct Vector3 {
+
+	float x;
+	float y;
+	float z;
+
+};
+
+struct Vector4 {
+
+	float x;
+	float y;
+	float z;
+	float w;
+
+};
+
+struct MaterialData {
+
+	std::string textureFilePath;
+
+};
+
+struct Matrix3x3 {
+
+	float m[3][3];
+
+};
+
+struct Matrix4x4 {
+
+	float m[4][4];
+
+};
+
+struct Transform {
+
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+
+};
+
+struct Material {
+
+	Vector4 color;
+	int32_t enableLighting;
+	float padding[3];
+	Matrix4x4 uvTransform;
+
+};
+
+struct TransformationMatrix
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+
+};
+
+struct DirectionalLight {
+
+	Vector4 color; // ライトの色
+	Vector3 direction; // ライトの向き
+	float intensity; // 輝度
+
+};
+
+struct VertexData {
+
+	Vector4 position;
+	Vector2 texcoord;
+	Vector3 normal;
 
 };
 
@@ -20,7 +97,7 @@ class DirectXCommon {
 
 public:
 
-void Initialize();
+void Initialize(WinApp* winApp);
 
 void DeviceInitialize();
 
@@ -28,13 +105,13 @@ void CommandInitialize();
 
 void SwapChainCreate();
 
-void ZBufferCreate();
+void DepthBufferCreate();
 
 void DescriptorHeapCreate();
 
 void RTVInitialize();
 
-void ZStencilViewInitialize();
+void DepthStencilViewInitialize();
 
 void FenceCreate();
 
@@ -57,6 +134,8 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t size);
+
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
 //スワップチェーンリソース
 std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
@@ -94,6 +173,10 @@ private:
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
 	//WindowsAPI
 	WinApp* winApp = nullptr;
