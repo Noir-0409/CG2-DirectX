@@ -186,6 +186,12 @@ private:
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 
+	D3D12_RESOURCE_BARRIER barrier{};
+
+	uint64_t fenceValue = 0;
+
+	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
 	//WindowsAPI
 	WinApp* winApp = nullptr;
 

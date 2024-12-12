@@ -343,13 +343,13 @@ void DirectXCommon::DepthStencilViewInitialize()
 void DirectXCommon::FenceCreate()
 {
 
-	uint64_t fenceValue = 0;
+	fenceValue = 0;
 
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 
 	assert(SUCCEEDED(hr));
 
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	assert(fenceEvent != nullptr);
 
@@ -601,7 +601,19 @@ void DirectXCommon::PreDraw()
 
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	commandList->ResourceBarrier(1, &barrier);
+
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
 	// 描画先のRTVとDSVを設定
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -616,6 +628,8 @@ void DirectXCommon::PreDraw()
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
 
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
 	commandList->RSSetViewports(1, &viewport);
 
 	commandList->RSSetScissorRects(1, &scissorRect);
@@ -624,6 +638,45 @@ void DirectXCommon::PreDraw()
 
 void DirectXCommon::PostDraw()
 {
+
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+
+	commandList->ResourceBarrier(1, &barrier);
+
+	hr = commandList->Close();
+
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
+
+	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+
+	swapChain->Present(1, 0);
+
+	fenceValue++;
+
+	commandQueue->Signal(fence.Get(), fenceValue);
+
+	if (fence->GetCompletedValue() < fenceValue) {
+
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+
+		WaitForSingleObject(fenceEvent, INFINITE);
+
+	}
+
+	hr = commandAllocator->Reset();
+
+	assert(SUCCEEDED(hr));
+
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
+
+	assert(SUCCEEDED(hr));
+
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
