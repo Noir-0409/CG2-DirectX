@@ -141,9 +141,9 @@ Transform transformSprite{
 Transform cameraTransform{
 
 	{1.0f,1.0f,1.0f},
-	//{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,-10.0f}
+	{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},
+	//{0.0f,0.0f,0.0f},
+	{0.0f,23.0f,10.0f}
 
 };
 
