@@ -1078,7 +1078,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine, uint32_t index) {
 
 	Particle particle;
 	particle.scale = { 1.0f, 1.0f, 1.0f };
-	particle.rotate = { 0.0f, 3.14f, 0.0f };
+	particle.rotate = { 0.0f, 0.0f, 0.0f };
 	particle.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
@@ -1984,23 +1984,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			billboardMatrix.m[3][1] = 0.0f;
 			billboardMatrix.m[3][2] = 0.0f;
 
-			Matrix4x4 scaleMatrix = MakeScaleMatrix(transform.scale);
-
-			Matrix4x4 translateMatrix = MakeTranslateMatrix(transform.translate);
-
+			Matrix4x4 scaleMatrix;
+			Matrix4x4 translateMatrix;
 			Matrix4x4 worldMatrix;
-
-			if (useBillBoard) {
-
-				worldMatrix = MakeAffinMatrix(transform.scale, transform.rotate, transform.translate);
-
-			} else {
-				
-			//worldMatrix = Multiply(scaleMatrix, billboardMatrix, translateMatrix); 
-				worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
-
-			
-			}
 
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
@@ -2008,14 +1994,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 
-				Matrix4x4 worldMatrix = MakeAffinMatrix(particles[index].scale, particles[index].rotate, particles[index].translate);
+				//Matrix4x4 worldMatrix = MakeAffinMatrix(particles[index].scale, particles[index].rotate, particles[index].translate);
+				Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix,billboardMatrix),translateMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-
-				if (particles[index].lifeTime <= particles[index].currentTime) {
-
-					continue;
-
-				}
 
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
@@ -2028,6 +2009,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[numInstance].color = particles[index].color;
 				instancingData[numInstance].color.w = alpha;
 				++numInstance;
+
+				scaleMatrix = MakeScaleMatrix(particles[index].scale);
+				translateMatrix = MakeTranslateMatrix(particles[index].translate);
+
+				if (useBillBoard==false) {
+
+					billboardMatrix = MakeIdentity4x4();
+
+				}
+
+				if (particles[index].lifeTime <= particles[index].currentTime) {
+
+					continue;
+
+				}
 
 			}
 
