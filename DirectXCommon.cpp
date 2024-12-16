@@ -39,37 +39,13 @@ void DirectXCommon::DeviceInitialize()
 
 #ifdef _DEBUG
 
-	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
+	Microsoft::WRL::ComPtr < ID3D12Debug1> debugController = nullptr;
 
-	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
 
-		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+		debugController->EnableDebugLayer();
 
-		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-
-		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-
-		D3D12_MESSAGE_ID denyIds[] = {
-
-			D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
-
-		};
-
-		D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
-
-		D3D12_INFO_QUEUE_FILTER filter{};
-
-		filter.DenyList.NumIDs = _countof(denyIds);
-
-		filter.DenyList.pIDList = denyIds;
-
-		filter.DenyList.NumSeverities = _countof(severities);
-
-		filter.DenyList.pSeverityList = severities;
-
-		infoQueue->PushStorageFilter(&filter);
-
-		infoQueue->Release();
+		debugController->SetEnableGPUBasedValidation(TRUE);
 
 	}
 
@@ -171,6 +147,44 @@ hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
 	}
 
+#ifdef _DEBUG
+
+	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
+
+	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+
+		D3D12_MESSAGE_ID denyIds[] = {
+
+			D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+
+		};
+
+		D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
+
+		D3D12_INFO_QUEUE_FILTER filter{};
+
+		filter.DenyList.NumIDs = _countof(denyIds);
+
+		filter.DenyList.pIDList = denyIds;
+
+		filter.DenyList.NumSeverities = _countof(severities);
+
+		filter.DenyList.pSeverityList = severities;
+
+		infoQueue->PushStorageFilter(&filter);
+
+		//infoQueue->Release();
+
+	}
+
+#endif
+
 }
 
 void DirectXCommon::CommandInitialize()
@@ -259,70 +273,29 @@ void DirectXCommon::DescriptorHeapCreate()
 
 void DirectXCommon::RTVInitialize()
 {
-	// スワップチェーンのリソースを取得
-	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2] = { nullptr };
-	HRESULT hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
+	// SwarpChainからResourceを引っ張ってくる
+	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
+	// 上手く取得できなければ起動できない
 	assert(SUCCEEDED(hr));
-
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
 
-	// RTVの記述子を設定
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;      // 出力結果をSRGBに変換して書き込む
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2Dテクスチャとして書き込む
+	// ディスクリプタの先頭を取得する
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	// RTVを2つ作るのでディスクリプタを2つ用意
 
-	// RTVディスクリプタヒープの開始アドレスを取得
-	rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	// 一つ目。最初のところに作る。作る場所の指定
+	rtvHandles[0] = rtvStartHandle;
+	device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
+	// 二つ目のディスクリプタハンドルを得る
+	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	// 二つ目を作る
+	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 
-	// ディスクリプタサイズを取得
-	UINT rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	// 裏表の2つ分
-	for (uint32_t i = 0; i < 2; ++i) {
-		// RTVハンドルを計算
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = { rtvStartHandle.ptr + i * rtvDescriptorSize };
-
-		// レンダーターゲットビューの生成
-		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandle);
-	}
-
-	// 描画先のRTVとSRVを設定
 	dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
 }
-
-//void DirectXCommon::RTVInitialize()
-//{
-//
-//	Microsoft::WRL::ComPtr < ID3D12Resource>swapChainResources[2] = { nullptr };
-//	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
-//	assert(SUCCEEDED(hr));
-//
-//	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
-//	assert(SUCCEEDED(hr));
-//
-//	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-//	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-//	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-//	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-//	rtvHandles[0] = rtvStartHandle;
-//
-//	//裏表の2つ分
-//	for (uint32_t i = 0; i < 2; ++i) {
-//
-//		//RTVハンドルを取得
-//	
-//		//レンダーターゲットビューの生成
-//		device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
-//
-//		rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-//
-//		device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
-//	
-//		
-//	}
-//
-//}
 
 void DirectXCommon::DepthStencilViewInitialize()
 {

@@ -778,25 +778,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-	//描画前処理
-	dxCommon->PreDraw();
+	
 
-	//描画後処理
-	dxCommon->PostDraw();
-
-//#ifdef _DEBUG
-//
-//	Microsoft::WRL::ComPtr < ID3D12Debug1> debugController = nullptr;
-//
-//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-//
-//		debugController->EnableDebugLayer();
-//
-//		debugController->SetEnableGPUBasedValidation(TRUE);
-//
-//	}
-//
-//#endif
 //
 //	// モデル読み込み
 //	ModelData modelData = LoadObjFile("resources", "plane.obj");
@@ -1182,13 +1165,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //
 //	MSG msg{};
 //
+
 	while (true) {
+
+		//描画前処理
+		dxCommon->PreDraw();
+
+		//描画後処理
+		dxCommon->PostDraw();
 
 		if (winApp->ProcessMessage()) {
 
 			break;
 
 		}
+
 	}
 
 		//
