@@ -217,4 +217,7 @@ private:
 	//テクスチャデータの転送
 	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
 
+	//テクスチャファイル読み込み
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
 };
