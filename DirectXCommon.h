@@ -150,6 +150,22 @@ void PostDraw();
 ID3D12Device* GetDevice() const { return device.Get(); }
 ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
+//シェーダーのコンパイル
+Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
+
+//バッファリソースの生成
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
+//テクスチャリソースの生成
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
+
+//テクスチャデータの転送
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+
+//テクスチャファイル読み込み
+static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+
 private:
 
 	HRESULT hr;
@@ -205,19 +221,5 @@ private:
 	//指定番号のGPUデスクリプタハンドルを取得する
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	//シェーダーのコンパイル
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
-
-	//バッファリソースの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
-
-	//テクスチャリソースの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
-
-	//テクスチャデータの転送
-	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
-
-	//テクスチャファイル読み込み
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
+	
 };
