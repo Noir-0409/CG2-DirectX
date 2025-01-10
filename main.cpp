@@ -115,6 +115,7 @@ struct Particle {
 	Vector3 rotate;
 	Vector3 translate;
 	Vector4 color;
+	Transform transform;
 
 	float lifeTime;
 	float currentTime;
@@ -1081,7 +1082,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 }
 
-Particle MakeNewParticle(std::mt19937& randomEngine) {
+Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3& translate) {
 
 	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
@@ -1097,6 +1098,11 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
 	particle.lifeTime = distTime(randomEngine);
 	particle.currentTime = 0;
 
+	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particle.transform.translate.x = translate.x + randomTranslate.x;
+	particle.transform.translate.y = translate.y + randomTranslate.y;
+	particle.transform.translate.z = translate.z + randomTranslate.z;
+
 	return particle;
 
 }
@@ -1107,7 +1113,7 @@ std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
 
 	for (uint32_t count = 0; count < emitter.count; ++count) {
 
-		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine,emitter.transform.translate));
 
 	}
 
@@ -1959,22 +1965,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::random_device seedGenerator;
 	std::mt19937 randomEngine(seedGenerator());
 
-	//Particle particles[kNumMaxInstance];
-
 	std::list<Particle> particles;
-
-	
-
-	/*for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-		
-		particles[index] = MakeNewParticle(randomEngine, index);
-
-	}*/
 
 	for (std::list<Particle>::iterator particleIterator = particles.begin();
 		particleIterator != particles.end(); ++particleIterator) {
 
-		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine,emitter.transform.translate));
 
 	}
 
@@ -2029,6 +2025,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			uint32_t numInstance=0;
 
+			emitter.transform.translate = { 0.0f,0.0f,0.0f };
+			emitter.transform.rotate = { 0.0f,0.0f,0.0f };
+			emitter.transform.scale = { 1.0f,1.0f,1.0f };
+
 			emitter.count = 3; //3個作る
 			emitter.frequency = 0.5f; //0.5秒毎に発生
 			emitter.frequencyTime = 0.0f; //発生頻度用の時刻、0で初期化
@@ -2046,7 +2046,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				Particle& particle = *particleIterator;
 
-				Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix,billboardMatrix),translateMatrix);
+				Matrix4x4 worldMatrix = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				float alpha = 1.0f - (particle.currentTime / particle.lifeTime);
@@ -2066,23 +2066,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				}
 
-				++particleIterator;
 
 				scaleMatrix = MakeScaleMatrix(particle.scale);
 				translateMatrix = MakeTranslateMatrix(particle.translate);
 
-				if (useBillBoard==false) {
+				if (useBillBoard == false) {
 
 					billboardMatrix = MakeIdentity4x4();
 
 				}
 
-				if ((*particleIterator).lifeTime<=(*particleIterator).currentTime) {
+				if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
 
 					particleIterator = particles.erase(particleIterator);
+				} else {
 
-					continue;
-
+					++particleIterator;
 				}
 
 			}
@@ -2105,6 +2104,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("translate", &transform.translate.x, 0.01f);
 			ImGui::DragFloat3("scale", &transform.scale.x, 0.01f);
 			ImGui::DragFloat3("rotate", &transform.rotate.x, 0.01f);
+			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
 			ImGui::SliderAngle("Light.color", &directionalLightData->color.x, 0.01f);
 			ImGui::SliderAngle("Light.direction", &directionalLightData->direction.x, 0.01f);
 			ImGui::SliderAngle("Light.intensity", &directionalLightData->intensity, 0.01f);
