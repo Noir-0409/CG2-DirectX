@@ -87,11 +87,17 @@ struct DirectionalLight {
 
 };
 
+struct CameraForGPU {
+
+	Vector3 worldPosition;
+
+};
+
 //Transform変数の作成
 Transform transform{
 
 	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
+	{0.0f,4.7f,0.0f},
 	{0.0f,0.0f,0.0f}
 
 };
@@ -1857,7 +1863,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1897,7 +1903,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			assert(SUCCEEDED(hr));
 
-			transform.rotate.y += 0.02f;
+			//transform.rotate.y += 0.02f;
 
 			wvpData ->World= worldMatrix;
 
