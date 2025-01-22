@@ -133,10 +133,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t size);
-
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
-
 //スワップチェーンリソース
 std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 
@@ -145,6 +141,26 @@ void PreDraw();
 
 //描画後処理
 void PostDraw();
+
+//getter
+ID3D12Device* GetDevice() const { return device.Get(); }
+ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+
+IDxcBlob* CompileShader(
+
+	const std::wstring& filePath,
+
+	const wchar_t* profile
+
+);
+
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
+
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+
+static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 private:
 
@@ -191,6 +207,10 @@ private:
 	uint64_t fenceValue = 0;
 
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
 	//WindowsAPI
 	WinApp* winApp = nullptr;
