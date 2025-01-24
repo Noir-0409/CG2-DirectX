@@ -69,7 +69,7 @@ struct Material {
 
 	Vector4 color;
 	int32_t enableLighting;
-	float shininess = 70.0f;
+	float shininess;
 
 };
 
@@ -1727,6 +1727,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//書き込むためのアドレスを取得
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+
+	materialData->shininess = 70.0f;
 
 	MSG msg{};
 

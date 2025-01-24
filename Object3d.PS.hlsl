@@ -1,64 +1,70 @@
 #include "Object3d.hlsli"
 
-Texture2D<float4> gTexture:register(t0);
+Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
-struct PixelShaderOutput {
+struct PixelShaderOutput
+{
 
-	float4 color : SV_TARGET0;
+    float4 color : SV_TARGET0;
 
 };
 
-struct Material {
-
-	float4 color;
-	int enableLighting;
+struct Material
+{
+	
+    float4 color;
+    int enableLighting;
     float4x4 uvTransform;
     float shininess;
 
 };
 
-struct DirectionalLight {
+struct DirectionalLight
+{
 
-	float4 color;
-	float3 direction;
-	float intensity;
+    float4 color;
+    float3 direction;
+    float intensity;
 
 };
 
-struct Camera{
+struct Camera
+{
 	
     float3 worldPosition;
 	
 };
 
-ConstantBuffer<Material> gMaterial:register(b0);
-ConstantBuffer<DirectionalLight> gDirectionalLight:register(b1);
+ConstantBuffer<Material> gMaterial : register(b0);
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCamera : register(b2);
 
-PixelShaderOutput main(VertexShaderOutput input) {
+PixelShaderOutput main(VertexShaderOutput input)
+{
 
-	PixelShaderOutput output;
+    PixelShaderOutput output;
 
-	float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
 
-	output.color = gMaterial.color * textureColor;
+    output.color = gMaterial.color * textureColor;
 
     float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
     float3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
 
 	
-	if (gMaterial.enableLighting != 0) {
+    if (gMaterial.enableLighting != 0)
+    {
 
-		float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-		float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
 
         float RdotE = dot(reflectLight, toEye);
         float specualarPow = pow(saturate(RdotE), gMaterial.shininess);
 		
-		output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
 		
-		//拡散反射
+	//拡散反射
         float3 diffuse = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
 	
 	//鏡面反射
@@ -70,12 +76,14 @@ PixelShaderOutput main(VertexShaderOutput input) {
 	//アルファ
         output.color.a = gMaterial.color.a * textureColor.a;
 
-	} else {
+    }
+    else
+    {
 
-		output.color = gMaterial.color * textureColor;
+        output.color = gMaterial.color * textureColor;
 
-	}
+    }
 
-	return output;
+    return output;
 
 }
