@@ -2015,6 +2015,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
+
 	Log("Hello,DirectX!\n");
 
 	CoUninitialize();
