@@ -50,13 +50,13 @@ PixelShaderOutput main(VertexShaderOutput input)
     output.color = gMaterial.color * textureColor;
 
     float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
-    float3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
+    float3 reflectLight = reflect(normalize(gDirectionalLight.direction), normalize(input.normal));
 
 	
     if (gMaterial.enableLighting != 0)
     {
 
-        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        float NdotL = dot(normalize(input.normal), normalize(-gDirectionalLight.direction));
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
 
         float RdotE = dot(reflectLight, toEye);

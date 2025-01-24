@@ -69,6 +69,8 @@ struct Material {
 
 	Vector4 color;
 	int32_t enableLighting;
+	float pad[3];
+	Matrix4x4 uvTransform;
 	float shininess;
 
 };
