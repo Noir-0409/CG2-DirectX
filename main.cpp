@@ -877,6 +877,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			L"ps_6_0");
 	
 		assert(pixelShaderBlob != nullptr);
+
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	
 		// DepthStencilStateの設定
 		D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -927,7 +929,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	
-		hr = dxCommon-> GetDevice()->CreateGraphicsPipelineState(&graphicsPipeLineStateDesc,
+		HRESULT hr = dxCommon-> GetDevice()->CreateGraphicsPipelineState(&graphicsPipeLineStateDesc,
 	
 			IID_PPV_ARGS(&graphicsPipelineState));
 	

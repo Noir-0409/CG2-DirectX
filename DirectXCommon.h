@@ -162,9 +162,9 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 
 static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
-private:
+HRESULT hr;
 
-	HRESULT hr;
+private:
 
 	//DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
