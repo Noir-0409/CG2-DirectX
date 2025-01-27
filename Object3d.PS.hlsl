@@ -55,12 +55,15 @@ PixelShaderOutput main(VertexShaderOutput input)
 	
     if (gMaterial.enableLighting != 0)
     {
+        
+        float3 halfVector = normalize(-gDirectionalLight.direction + toEye);
+        float NDotH = dot(normalize(input.normal), halfVector);
 
         float NdotL = dot(normalize(input.normal), normalize(-gDirectionalLight.direction));
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
 
         float RdotE = dot(reflectLight, toEye);
-        float specualarPow = pow(saturate(RdotE), gMaterial.shininess);
+        float specualarPow = pow(saturate(NDotH), gMaterial.shininess);
 		
         output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
 		
