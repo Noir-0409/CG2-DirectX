@@ -1,7 +1,6 @@
 #pragma once
 #include <wrl.h>
 #include "externals/imgui/imgui_impl_dx12.h"
-#include <d3dcommon.h>
 #include <d3d12.h>
 #include <format>
 #include <dxgi1_6.h>
@@ -9,6 +8,8 @@
 #include <dxcapi.h>
 #include "externals/DirectXTex/DirectXTex.h"
 #include <array>
+#include <cstdint>
+#include <string>
 
 struct Vector2 {
 
@@ -186,10 +187,6 @@ private:
 	Microsoft::WRL::ComPtr < ID3D12Fence> fence;
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissorRect{};
-
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxcCompiler = nullptr;
-	IDxcIncludeHandler* includeHandler = nullptr;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};

@@ -641,12 +641,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ModelData modelData = LoadObjFile("resources", "plane.obj");
 	
 		// 頂点リソースを作る
-		//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
 	
 		// 頂点バッファビューを作成
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	
-		//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの先頭のアドレスから使う
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソースの先頭のアドレスから使う
 	
 		vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
 	
@@ -655,7 +655,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 頂点リソースにデータを書き込む
 		VertexData* vertexData = nullptr;
 	
-		//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+		vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
 	
 		std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 	
@@ -677,7 +677,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	
+		
 		srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
+
+
+		//SRVを作成するDescriptorHeapの場所を決める
+		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxCommon->GetSRVCPUDescriptorHandle(1);
+
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxCommon->GetSRVGPUDescriptorHandle(1);
+
+
+
+		//SRVの生成
+		dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
+
+
+
+
 	
 		// Textureを読んで転送する
 		DirectX::ScratchImage mipImages = dxCommon->LoadTexture("resources/UVChecker.png");
@@ -699,24 +715,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
 	
-		
 		 //SRVを作成するDescriptorHeapの場所を決める
-		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxCommon->GetSRVCPUDescriptorHandle(2);
+		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetSRVCPUDescriptorHandle(2);
 	
-		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxCommon->GetSRVGPUDescriptorHandle(2);
-	
-		 //先頭はimGuiが使っているのでその次を使う
-		textureSrvHandleCPU2.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	
-		textureSrvHandleGPU2.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	
-		 //SRVの生成
-		dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
-	
-		 //SRVを作成するDescriptorHeapの場所を決める
-		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetSRVCPUDescriptorHandle(0);
-	
-		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetSRVGPUDescriptorHandle(0);
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetSRVGPUDescriptorHandle(2);
 	
 		 //先頭はimGuiが使っているのでその次を使う
 		textureSrvHandleCPU.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -726,6 +728,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		 //SRVの生成
 		dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 	
+
+
 		D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -821,6 +825,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	
 		directionalLightData->intensity = 1.0f;
+
+		ID3DBlob* signatureBlob = nullptr;
+
+		ID3DBlob* errorBlob = nullptr;
+
+		HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+
+			D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+
+		if (FAILED(hr)) {
+
+			Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+
+			assert(false);
+
+		}
+
 	
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	
@@ -879,6 +900,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		assert(pixelShaderBlob != nullptr);
 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+
+		hr = dxCommon->GetDevice()->CreateRootSignature(0,
+
+			signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+
+			IID_PPV_ARGS(&rootSignature));
+
+		assert(SUCCEEDED(hr));
 	
 		// DepthStencilStateの設定
 		D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -929,7 +958,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	
-		HRESULT hr = dxCommon-> GetDevice()->CreateGraphicsPipelineState(&graphicsPipeLineStateDesc,
+	hr = dxCommon-> GetDevice()->CreateGraphicsPipelineState(&graphicsPipeLineStateDesc,
 	
 			IID_PPV_ARGS(&graphicsPipelineState));
 	
@@ -1067,37 +1096,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//
 		//			}
 		//
-		//			//各種行列の計算
-		//			Matrix4x4 worldMatrix = MakeAffinMatrix(transform.scale, transform.rotate, transform.translate);
-		//
-		//			Matrix4x4 cameraMatrix = MakeAffinMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		//
-		//			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-		//
-		//			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-		//
-		//			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-		//
-		//			Matrix4x4 worldMatrixSprite = MakeAffinMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-		//
-		//			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-		//
-		//			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-		//
-		//			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-		//
-		//			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-		//
-		//			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-		//
-		//			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-		//
-		//			materialDataSprite->uvTransform = uvTransformMatrix;
-		//
-		//			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
-		//
-		//			transformationMatrixDataSprite->World = worldViewProjectionMatrixSprite;
-		//
+					//各種行列の計算
+					Matrix4x4 worldMatrix = MakeAffinMatrix(transform.scale, transform.rotate, transform.translate);
+		
+					Matrix4x4 cameraMatrix = MakeAffinMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		
+					Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+		
+					Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+		
+					Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+		
+					Matrix4x4 worldMatrixSprite = MakeAffinMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+		
+					Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+		
+					Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
+		
+					Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+		
+					Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+		
+					uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+		
+					uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+		
+					materialDataSprite->uvTransform = uvTransformMatrix;
+		
+					transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
+		
+					transformationMatrixDataSprite->World = worldViewProjectionMatrixSprite;
+		
 					ImGui::Begin("Window");
 		
 					ImGui::DragFloat3("color", &materialData->color.x, 0.01f);
@@ -1205,4 +1234,4 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	return 0;
 
-}
+} 
