@@ -2105,7 +2105,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				}
 
-
 				scaleMatrix = MakeScaleMatrix(particle.scale);
 				translateMatrix = MakeTranslateMatrix(particle.translate);
 
