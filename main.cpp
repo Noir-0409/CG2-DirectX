@@ -122,6 +122,22 @@ struct Particle {
 
 };
 
+struct AABB {
+
+	Vector3 min;
+	Vector3 max;
+
+};
+
+struct AccelerationField {
+
+	Vector3 acceleration;
+	AABB area;
+
+};
+
+AccelerationField accelerationField;
+
 //Transform変数の作成
 Transform transform{
 
@@ -1121,6 +1137,14 @@ std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
 
 }
 
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+
+	return (point.x >= aabb.min.x && point.x <= aabb.max.x &&
+		point.y >= aabb.min.y && point.y <= aabb.max.y &&
+		point.z >= aabb.min.z && point.z <= aabb.max.z);
+
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -1980,6 +2004,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
 	emitter.transform.scale = { 1.0f,1.0f,1.0f };
 
+	accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 
 	MSG msg{};
 
@@ -2054,6 +2081,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 
 				float alpha = 1.0f - (particle.currentTime / particle.lifeTime);
+
+				//Fieldの範囲内のParticleには加速度を適用する
+				if (IsCollision(accelerationField.area, (*particleIterator).translate)) {
+
+					(*particleIterator).velocity.x += accelerationField.acceleration.x * kDeltaTime;
+					(*particleIterator).velocity.y += accelerationField.acceleration.y * kDeltaTime;
+					(*particleIterator).velocity.z += accelerationField.acceleration.z * kDeltaTime;
+				}
 
 				particle.translate.x += particle.velocity.x * kDeltaTime;
 				particle.translate.y += particle.velocity.y * kDeltaTime;
