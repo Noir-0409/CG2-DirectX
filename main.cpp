@@ -1099,9 +1099,9 @@ Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3& translate) {
 	particle.currentTime = 0;
 
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
-	particle.transform.translate.x = translate.x + randomTranslate.x;
-	particle.transform.translate.y = translate.y + randomTranslate.y;
-	particle.transform.translate.z = translate.z + randomTranslate.z;
+	particle.translate.x = translate.x + randomTranslate.x;
+	particle.translate.y = translate.y + randomTranslate.y;
+	particle.translate.z = translate.z + randomTranslate.z;
 
 	return particle;
 
@@ -1971,8 +1971,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particleIterator != particles.end(); ++particleIterator) {
 
 		particles.push_back(MakeNewParticle(randomEngine,emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 
 	}
+
+	emitter.transform.translate = { 0.0f,0.0f,0.0f };
+	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
+	emitter.transform.scale = { 1.0f,1.0f,1.0f };
+
 
 	MSG msg{};
 
@@ -2025,10 +2032,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			uint32_t numInstance=0;
 
-			emitter.transform.translate = { 0.0f,0.0f,0.0f };
-			emitter.transform.rotate = { 0.0f,0.0f,0.0f };
-			emitter.transform.scale = { 1.0f,1.0f,1.0f };
-
+			
 			emitter.count = 3; //3個作る
 			emitter.frequency = 0.5f; //0.5秒毎に発生
 			emitter.frequencyTime = 0.0f; //発生頻度用の時刻、0で初期化
@@ -2112,6 +2116,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (ImGui::Button("Add Particle")) {
 
 				particles.splice(particles.end(), Emit(emitter, randomEngine));
+
 
 			}
 			ImGui::End();
