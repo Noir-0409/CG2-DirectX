@@ -10,6 +10,8 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <chrono>
+#include <thread>
 
 struct Vector2 {
 
@@ -145,6 +147,15 @@ void PostDraw();
 
 //終了
 void Finalize();
+
+//FPS固定初期化
+void InitializeFixFPS();
+
+//FPS固定更新
+void UpdateFixFPS();
+
+//記録時間
+std::chrono::steady_clock::time_point reference_;
 
 //getter
 ID3D12Device* GetDevice() const { return device.Get(); }

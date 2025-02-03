@@ -2,6 +2,8 @@
 #include <cstdint>
 #include "externals/imgui/imgui.h"
 
+#pragma comment (lib,"winmm.lib")
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -27,6 +29,9 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void WinApp::Initialize()
 {
+
+	//システムタイマーの分解脳を上げる
+	timeBeginPeriod(1);
 
 	HRESULT hr = CoInitializeEx(0,COINIT_MULTITHREADED);
 
