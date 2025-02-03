@@ -29,37 +29,13 @@ struct ModelData {
 };
 
 //Transform変数の作成
-Transform transform{
+Transform transform;
 
-	{1.0f,1.0f,1.0f},
-	{0.0f,3.150f,0.0f},
-	{0.0f,0.0f,0.0f}
+Transform transformSprite;
 
-};
+Transform cameraTransform;
 
-Transform transformSprite{
-
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-
-};
-
-Transform cameraTransform{
-
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,-10.0f}
-
-};
-
-Transform uvTransformSprite{
-
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-
-};
+Transform uvTransformSprite;
 
 void Log(const std::string& message) {
 
@@ -613,6 +589,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
+	transform= {
+
+	{1.0f,1.0f,1.0f},
+	{0.0f,3.150f,0.0f},
+	{0.0f,0.0f,0.0f}
+
+	};
+
+	transformSprite= {
+
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+
+	};
+
+	cameraTransform = {
+	{ 1.0f,1.0f,1.0f },
+	{ 0.0f,0.0f,0.0f },
+	{ 0.0f,0.0f,-10.0f }
+
+	};
+
+	uvTransformSprite= {
+
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+
+	};
+
 #pragma region Windowの生成
 
 
@@ -633,6 +640,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DirectXの初期化
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+
+
 
 		// モデル読み込み
 		ModelData modelData = LoadObjFile("resources", "axis.obj");
@@ -1055,6 +1064,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		MSG msg{};
 	
+
 
 	while (true) {
 
