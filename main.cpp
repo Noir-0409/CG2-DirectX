@@ -634,11 +634,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-
-
-	
 		// モデル読み込み
-		ModelData modelData = LoadObjFile("resources", "plane.obj");
+		ModelData modelData = LoadObjFile("resources", "axis.obj");
 	
 		// 頂点リソースを作る
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
@@ -677,24 +674,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	
-		
 		srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-
 
 		//SRVを作成するDescriptorHeapの場所を決める
 		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxCommon->GetSRVCPUDescriptorHandle(1);
 
 		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxCommon->GetSRVGPUDescriptorHandle(1);
 
-
-
 		//SRVの生成
 		dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
-
-
-
-	
 		// Textureを読んで転送する
 		DirectX::ScratchImage mipImages = dxCommon->LoadTexture("resources/UVChecker.png");
 	
@@ -727,10 +716,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		 //SRVの生成
 		dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	
 
+		D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+
+		descriptionRootSignature.Flags =
+
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	
+		D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+
+		staticSamplers[0].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+
+		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+		staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+		staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+
+		staticSamplers[0].ShaderRegister = 0;
+
+		staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 
 		D3D12_ROOT_PARAMETER rootParameters[4] = {};
+
+		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
+
+		descriptorRange[0].NumDescriptors = 1; // 数は1つ
+
+		descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+
+		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを指導計算
+
+		descriptionRootSignature.pStaticSamplers = staticSamplers;
+
+		descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
+
+		descriptionRootSignature.pParameters = rootParameters;
+
+		descriptionRootSignature.NumParameters = _countof(rootParameters);
 	
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	
@@ -748,57 +777,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	
-		//rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
+		rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
 	
-		//rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
 	
 		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; //CBVを使う
 	
 		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderを使う
 	
 		rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号1を使う
-	
-		D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-	
-		staticSamplers[0].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-	
-		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	
-		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	
-		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	
-		staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	
-		staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-	
-		staticSamplers[0].ShaderRegister = 0;
-	
-		staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	
-		D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-
-		descriptionRootSignature.Flags =
-
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-
-		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
-
-		descriptorRange[0].NumDescriptors = 1; // 数は1つ
-
-		descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
-
-		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを指導計算
-
-		descriptionRootSignature.pStaticSamplers = staticSamplers;
-	
-		descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-	
-		descriptionRootSignature.pParameters = rootParameters;
-	
-		descriptionRootSignature.NumParameters = _countof(rootParameters);
 	
 		// Sprite用のMaterialResourceを作る
 		Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = dxCommon-> CreateBufferResource( sizeof(Material));
@@ -1147,64 +1134,62 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 					//ImGui::ShowDemoWindow();
 		//
-		//			wvpData->World = worldViewProjectionMatrix;
+					wvpData->World = worldViewProjectionMatrix;
+		
+					wvpData->WVP = worldViewProjectionMatrix;
 		//
-		//			wvpData->WVP = worldViewProjectionMatrix;
-		//
-		//			scissorRect.bottom = WinApp::kClientHeight;
 		//
 					ImGui::Render();
 		//
-		//			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+					//dxCommon->GetCommandList()->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 
-		//			commandList->SetGraphicsRootSignature(rootSignature.Get());
-		//
-		//			commandList->SetPipelineState(graphicsPipelineState.Get());
-		//
-		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		//
-		//			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-		//
-		//			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
-		//			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//
-		//			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-		//
-		//			//commandList->DrawInstanced(1536, 1, 0, 0);
-		//
-		//			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-		//
-		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-		//
-		//			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-		//
-		//			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-		//
-		//			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//
-		//			// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
-		//			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//
-		//			commandList->IASetIndexBuffer(&indexBufferViewSprite);
-		//
-		//			// 描画　ドローコール
-		//			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+					dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 		
+					dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
+		
+					dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+		
+					dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+		
+					// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+		
+					//dxCommon->GetCommandList()->DrawInstanced(1536, 1, 0, 0);
+		
+					dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+		
+					dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+		
+					dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+		
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+		
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		
+					// SRVのDescriptortableの先頭を設定。2はrootParameter[2]である
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		
+					dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+		
+					// 描画　ドローコール
+					dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		
+					ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+
 		//描画後処理
 		dxCommon->PostDraw();
-
-
-		//			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 		//
 		//			//transform.rotate.y += 0.02f;
 		//

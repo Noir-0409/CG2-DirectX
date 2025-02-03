@@ -356,6 +356,8 @@ void DirectXCommon::ScissorRectInitialize()
 
 	scissorRect.top = 0;
 
+	scissorRect.bottom = WinApp::kClientHeight;
+
 }
 
 void DirectXCommon::DXCCompilerCreate()
