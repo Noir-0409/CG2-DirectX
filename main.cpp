@@ -641,8 +641,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-
-
 		// モデル読み込み
 		ModelData modelData = LoadObjFile("resources", "axis.obj");
 	
@@ -1151,7 +1149,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//
 					ImGui::Render();
 		//
-					//dxCommon->GetCommandList()->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+					
 
 					dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 		

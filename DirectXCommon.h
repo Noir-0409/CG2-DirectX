@@ -10,6 +10,8 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <chrono>
+#include <thread>
 
 struct Vector2 {
 
@@ -123,6 +125,15 @@ void ScissorRectInitialize();
 void DXCCompilerCreate();
 
 void ImGuiInitialize();
+
+//FPS固定初期化
+void InitializeFixFPS();
+
+//FPS固定更新
+void UpdateFixFPS();
+
+//記録時間
+std::chrono::steady_clock::time_point reference_;
 
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencialTextureResource( int32_t width, int32_t height);
 

@@ -21,6 +21,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	//メンバ変数に記録
 	this->winApp = winApp;
 
+	InitializeFixFPS();
+
 	DeviceInitialize();
 	CommandInitialize();
 	SwapChainCreate();
@@ -399,6 +401,46 @@ void DirectXCommon::ImGuiInitialize()
 
 }
 
+void DirectXCommon::InitializeFixFPS()
+{
+
+	//現在時間を記録
+	reference_ = std::chrono::steady_clock::now();
+
+}
+
+void DirectXCommon::UpdateFixFPS()
+{
+
+	//1/60秒ぴったりの時間
+	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
+
+	//1/60秒よりわずかに短い時間
+	const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f / 65.0f));
+
+	//現在時間を取得
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+	//前回時間からの経過時間を取得
+	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
+
+	//1/60秒経っていない場合
+	if (elapsed < kMinTime) {
+
+		//1/60秒経過するまで微小なスリープを繰り返す
+		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
+
+			//1マイクロ秒スリープ
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
+
+		}
+	}
+
+	//現在の時間を記録
+	reference_ = std::chrono::steady_clock::now();
+
+}
+
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencialTextureResource(int32_t width, int32_t height)
 {
 
@@ -548,6 +590,8 @@ void DirectXCommon::PostDraw()
 	fenceValue++;
 
 	commandQueue->Signal(fence.Get(), fenceValue);
+
+	UpdateFixFPS();
 
 	if (fence->GetCompletedValue() < fenceValue) {
 
