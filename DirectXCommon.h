@@ -143,11 +143,14 @@ void PreDraw();
 //描画後処理
 void PostDraw();
 
+//終了
+void Finalize();
+
 //getter
 ID3D12Device* GetDevice() const { return device.Get(); }
 ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 
-IDxcBlob* CompileShader(
+Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 
 	const std::wstring& filePath,
 
@@ -157,7 +160,7 @@ IDxcBlob* CompileShader(
 
 Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
 
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
 
 void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
 

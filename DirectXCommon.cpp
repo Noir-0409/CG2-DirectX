@@ -134,8 +134,8 @@ hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを指導計算
 
-	ID3DBlob* signatureBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 
 	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
 
@@ -180,8 +180,6 @@ hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 		filter.DenyList.pSeverityList = severities;
 
 		infoQueue->PushStorageFilter(&filter);
-
-		//infoQueue->Release();
 
 	}
 
@@ -514,9 +512,9 @@ void DirectXCommon::PreDraw()
 	// 指定した深度で画面全体をクリア
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap.Get()};
 
-	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+	commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
 	commandList->RSSetViewports(1, &viewport);
 
@@ -539,9 +537,9 @@ void DirectXCommon::PostDraw()
 
 	assert(SUCCEEDED(hr));
 
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
+	ID3D12CommandList* commandLists[] = { commandList.Get()};
 
-	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+	commandQueue->ExecuteCommandLists(1, commandLists);
 
 	swapChain->Present(1, 0);
 
@@ -567,11 +565,20 @@ void DirectXCommon::PostDraw()
 
 }
 
-IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
+void DirectXCommon::Finalize()
+{
+
+	CloseHandle(fenceEvent);
+
+	CoUninitialize();
+
+}
+
+Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {
 	Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader,path:{}", profile)));
 
-	IDxcBlobEncoding* shaderSource = nullptr;
+	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
 
 	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 
@@ -601,7 +608,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	};
 
-	IDxcResult* shaderResult = nullptr;
+	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
 
 	hr = dxcCompiler->Compile(
 
@@ -619,7 +626,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	assert(SUCCEEDED(hr));
 
-	IDxcBlobUtf8* shaderError = nullptr;
+	Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError = nullptr;
 
 	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
 
@@ -631,7 +638,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	}
 
-	IDxcBlob* shaderBlob = nullptr;
+	Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = nullptr;
 
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
 
@@ -639,9 +646,9 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 
 	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 
-	shaderSource->Release();
+	/*shaderSource->Release();
 
-	shaderResult->Release();
+	shaderResult->Release();*/
 
 	return shaderBlob;
 }
@@ -684,7 +691,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata)
 {
 	
 	// metaDataを基にResourceの設定
@@ -791,16 +798,6 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 
 
 }
-
-//D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
-//{
-//	return D3D12_CPU_DESCRIPTOR_HANDLE();
-//}
-//
-//D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
-//{
-//	return D3D12_GPU_DESCRIPTOR_HANDLE();
-//}
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
