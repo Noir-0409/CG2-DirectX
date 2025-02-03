@@ -9,6 +9,7 @@
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"winmm.lib")
 
 using namespace Microsoft::WRL;
 
@@ -20,6 +21,9 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 	//メンバ変数に記録
 	this->winApp = winApp;
+
+	//システムタイマーの分解脳を上げる
+	timeBeginPeriod(1);
 
 	InitializeFixFPS();
 
@@ -425,7 +429,7 @@ void DirectXCommon::UpdateFixFPS()
 	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
 
 	//1/60秒経っていない場合
-	if (elapsed < kMinTime) {
+	if (elapsed < kMinCheckTime) {
 
 		//1/60秒経過するまで微小なスリープを繰り返す
 		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
