@@ -576,6 +576,12 @@ void DirectXCommon::Finalize()
 
 	CoUninitialize();
 
+	ImGui_ImplDX12_Shutdown();
+
+	ImGui_ImplWin32_Shutdown();
+
+	ImGui::DestroyContext();
+
 }
 
 void DirectXCommon::InitializeFixFPS()
