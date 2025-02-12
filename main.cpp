@@ -15,7 +15,8 @@
 #include "StringUtility.h"
 #include "D3D12ResourceLeakChecker.h"
 #include "externals/imgui/imgui_impl_win32.h"
-
+#include <stdio.h>
+#include <Windows.h>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -569,6 +570,37 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 
 	// ModelDataを返す
 	return modelData;
+
+}
+
+int Recursive(int hour) {
+	if (hour == 1) {
+		return 100;
+	}
+	return Recursive(hour - 1) * 2 - 50;
+}
+int FindProfitableHour() {
+	int standardTotalIncome = 0;
+	int recursiveTotalIncome = 0;
+	int hourCount = 0;
+
+
+	while (recursiveTotalIncome <= standardTotalIncome) {
+		hourCount++;
+		standardTotalIncome += 1072;
+		recursiveTotalIncome += Recursive(hourCount);
+	}
+
+	return hourCount;
+}
+
+int main(){
+
+	SetConsoleOutputCP(65001);
+	int profitableHour = FindProfitableHour();
+	printf("再帰的な収益が標準的な収益を超えるまでの時間: %d 時間\n", profitableHour);
+
+	return 0;
 
 }
 
@@ -1186,20 +1218,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//描画後処理
 		dxCommon->PostDraw();
-		//
-		//			//transform.rotate.y += 0.02f;
-		//
-		//			wvpData->World = worldMatrix;
-		//
-		//			wvpData->WVP = worldMatrix;
-		////
-		//		}
-		//
-
-
-
-		//
-		//	Log("Hello,DirectX!\n");
+		
 
 	}
 
@@ -1209,6 +1228,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete dxCommon;
 
 	delete input;
+
+	system("pause");
 
 	return 0;
 
